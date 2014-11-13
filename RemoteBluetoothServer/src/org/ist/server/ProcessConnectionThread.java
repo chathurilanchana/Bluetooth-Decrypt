@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 import javax.microedition.io.StreamConnection;
 
-import org.ist.server.crypto.PasswordHash;
+import org.ist.server.crypto.KEKGenerator;
 import org.ist.server.utils.MessageProcessor;
 
 
@@ -34,21 +34,12 @@ public class ProcessConnectionThread implements Runnable{
 			System.out.println("waiting for input");
 	        
 	        while (true) {
-	        //	StringBuffer buf = new StringBuffer();
 	        	int command=0;
-                 //System.out.println((char)command);
-	        /*	while ((command = inputStream.read()) != -1) {
-	  
-	        		System.out.println((char)command);
-                    buf.append((char) command);
-                }
-	        	System.out.println("came here");
-	        	System.out.println(buf.toString());*/
 	        	int bytes;
                 byte[] buffer = new byte[1024];
-	        	bytes = inputStream.read(buffer);
+	        	inputStream.read(buffer);
 	        	String receivedMsg = new String(buffer);
-	        	System.out.println(receivedMsg);
+	        	System.out.println("Received msg is "+receivedMsg);
 
 	        	MessageProcessor msgProcessor=new MessageProcessor();
 	        	msgProcessor.processReceivedString(receivedMsg);

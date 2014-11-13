@@ -51,6 +51,7 @@ import android.widget.Toast;
 public class BluetoothApp extends Activity {
 	
 	private final String SEP_PIPE=":";
+	private final String SEP_MSG=";";
 	private final String LOGIN_PREFIX="LG";
 	private final String PWD_PREFIX="PW";
     // Debugging
@@ -209,13 +210,14 @@ public class BluetoothApp extends Activity {
            String userName = unameView.getText().toString();
            String password=passwordView.getText().toString();
            String kek=kekGen.createHash(password);
-           System.out.println("kek is "+kek);
-           
+           System.out.println(kek);
            //Do we need to verify username as well? Coz we already share a secret.
            String messageToEncrypt=PWD_PREFIX.concat(SEP_PIPE).concat(password);
            String encryptedMsg=encrypter.getEncryptedMessage(messageToEncrypt,kek);
-           sendMessage(encryptedMsg);
-           System.out.println("mesage is---------"+encryptedMsg);
+           System.out.println("encrypted msg "+encryptedMsg);
+           String messageToSend=userName.concat(SEP_MSG).concat(encryptedMsg);
+           sendMessage(messageToSend);
+           System.out.println("mesage is---------"+messageToSend);
     	}
     	catch(Exception ex){
     		System.out.println("Error occured while login to the server");

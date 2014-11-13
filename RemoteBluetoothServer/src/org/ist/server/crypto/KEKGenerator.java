@@ -39,7 +39,7 @@ import java.security.spec.InvalidKeySpecException;
  * Author: havoc AT defuse.ca
  * www: http://crackstation.net/hashing-security.htm
  */
-public class PasswordHash
+public class KEKGenerator
 {
     private final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
 
@@ -194,7 +194,7 @@ public class PasswordHash
      */
     public static void main(String[] args)
     {
-    	PasswordHash hashObj=new PasswordHash();
+    	KEKGenerator hashObj=new KEKGenerator();
         try
         {
             // Print out 10 hashes

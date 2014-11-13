@@ -1,4 +1,4 @@
-package org.ist.BluetoothApp.crypto;
+package org.ist.server.crypto;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -14,7 +14,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import android.util.Base64;
+import org.apache.commons.codec.binary.Base64;
+
 
 public class Crypto {
 	public String getEncryptedMessage(String messageToEncrypt, String kek) {
@@ -30,12 +31,13 @@ public class Crypto {
 	        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, ivspec);
 	        // encrypt the message
 	        byte[] encrypted = cipher.doFinal(messageToEncrypt.getBytes());
-	        String enc=Base64.encodeToString(encrypted, Base64.DEFAULT);
-	        System.out.println("Ciphertext: " +enc + "\n");
-		   /* String decrypted=decrypt(enc, kek);
+	        String enc=  Base64.encodeBase64String(encrypted);
+		       // String enc=new String(encrypted,"UTF-8");
+		        System.out.println("Ciphertext: " +enc + "\n");
+			    String decrypted=decrypt(enc, kek);
+		
 		    System.out.println("decrypted"+decrypted);
-	        return decrypted;*/
-	        return enc;
+	        return decrypted;
 		} catch (Exception ex) {
 			System.out
 					.println("Exception thrown while encrypting the initial message");
@@ -48,17 +50,18 @@ public class Crypto {
 			throws KeyException, GeneralSecurityException,
 			GeneralSecurityException, InvalidAlgorithmParameterException,
 			IllegalBlockSizeException, BadPaddingException, IOException {
-		byte[] cipheredBytes = Base64.decode(encryptedText, Base64.DEFAULT);
+		byte[] cipheredBytes = Base64.decodeBase64(encryptedText);
 		byte[] keyBytes = getKeyBytes(key);
 		byte[] ivBytes = getIVBytes(key);
 		return new String(decrypt(cipheredBytes, keyBytes, ivBytes),
 				"UTF-8");
+
 	}
 
 	
 	// Get key byte array 128 bit. We need to change this to 256
 	private byte[] getKeyBytes(String key) throws UnsupportedEncodingException {
-		byte[] keyBytes = new byte[32];
+		byte[] keyBytes = new byte[16];
 		byte[] parameterKeyBytes = key.getBytes("UTF-8");
 		System.arraycopy(parameterKeyBytes, 0, keyBytes, 0,
 				Math.min(parameterKeyBytes.length, keyBytes.length));
