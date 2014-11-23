@@ -58,7 +58,7 @@ public class Crypto {
 	
 	// Get key byte array 128 bit. We need to change this to 256
 	private byte[] getKeyBytes(String key) throws UnsupportedEncodingException {
-		byte[] keyBytes = new byte[32];
+		byte[] keyBytes = new byte[16];
 		byte[] parameterKeyBytes = key.getBytes("UTF-8");
 		System.arraycopy(parameterKeyBytes, 0, keyBytes, 0,
 				Math.min(parameterKeyBytes.length, keyBytes.length));

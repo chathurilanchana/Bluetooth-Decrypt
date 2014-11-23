@@ -18,7 +18,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.binary.Base64;
 /**
  *
  * @author Chathuri
@@ -37,13 +36,12 @@ public String getEncryptedMessage(String messageToEncrypt, String kek) {
 	        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, ivspec);
 	        // encrypt the message
 	        byte[] encrypted = cipher.doFinal(messageToEncrypt.getBytes());
-	        String enc=  Base64.encodeBase64String(encrypted);
-		       // String enc=new String(encrypted,"UTF-8");
-		        System.out.println("Ciphertext: " +enc + "\n");
-			    String decrypted=decrypt(enc, kek);
-		
+	        String enc=Base64.encodeToString(encrypted, Base64.DEFAULT);
+	        System.out.println("Ciphertext: " +enc + "\n");
+		    String decrypted=decrypt(enc, kek);
 		    System.out.println("decrypted"+decrypted);
-	        return decrypted;
+	        /*return decrypted;*/
+	        return enc;
 		} catch (Exception ex) {
 			System.out
 					.println("Exception thrown while encrypting the initial message");
@@ -56,12 +54,11 @@ public String getEncryptedMessage(String messageToEncrypt, String kek) {
 			throws KeyException, GeneralSecurityException,
 			GeneralSecurityException, InvalidAlgorithmParameterException,
 			IllegalBlockSizeException, BadPaddingException, IOException {
-		byte[] cipheredBytes = Base64.decodeBase64(encryptedText);
+		byte[] cipheredBytes = Base64.decode(encryptedText, Base64.DEFAULT);
 		byte[] keyBytes = getKeyBytes(key);
 		byte[] ivBytes = getIVBytes(key);
 		return new String(decrypt(cipheredBytes, keyBytes, ivBytes),
 				"UTF-8");
-
 	}
 
 	

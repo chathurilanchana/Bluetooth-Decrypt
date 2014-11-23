@@ -16,6 +16,7 @@ import org.ist.server.utils.MessageProcessor;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.OutputStream;
+import org.ist.server.crypto.KEKGenerator;
 import org.ist.server.utils.ServerUtils;
 
 /**
@@ -35,6 +36,7 @@ public class BluetoothServer extends javax.swing.JFrame {
     private final String LOGIN_PREFIX = "LG";
     private final String SEP_MSG = ";";
     private final String SEP_PIPE = ":";
+    private String sessionKey;
 
     /**
      * Creates new form BluetoothServer
@@ -44,7 +46,7 @@ public class BluetoothServer extends javax.swing.JFrame {
         initComponents();
         Thread t1 = new Thread(new Runnable() {
             public void run() {
-          waitForConnection();
+                waitForConnection();
             }
         });
         t1.start();
@@ -95,36 +97,51 @@ public class BluetoothServer extends javax.swing.JFrame {
 
             // prepare to receive data
             InputStream inputStream = connection.openInputStream();
-
+            String userName = null;
+            String encryptedReplyMessage = null;
             while (true) {
                 int command = 0;
                 int bytes;
                 byte[] buffer = new byte[1024];
-                inputStream.read(buffer);             
-                ServerUtils utils=new ServerUtils();
-                byte[] filtered=utils.BufferFilter(buffer);//to remove 0 bytes
-                 String receivedMsg = new String(filtered);
-         
-                MessageProcessor messageProcessor = new MessageProcessor();
-                String processedMsg = messageProcessor.processReceivedString(receivedMsg);
-                jTextArea1.setText(jTextArea1.getText() + processedMsg + "\n");
-                String messageToSend=messageProcessor.generateReplyMessage(processedMsg);
-                if(messageToSend.equals("NOUSER")){
-                    jTextArea1.setText(jTextArea1.getText()+"no user exist with username"+processedMsg.split(SEP_PIPE)[1]+"\n");
-                }
-                else{
-                OutputStream outStream=connection.openOutputStream();
-                outStream.write(messageToSend.getBytes());
-                }
-              
-                // Send the obtained bytes to the UI Activity   
-                if (command == EXIT_CMD) {
-                    System.out.println("finish process");
+                inputStream.read(buffer);
+
+                if (buffer[0] != 0) {
+                    ServerUtils utils = new ServerUtils();
+                    byte[] filtered = utils.BufferFilter(buffer);//to remove 0 bytes
+
+                    String receivedMsg = new String(filtered);
+
+                    MessageProcessor messageProcessor = new MessageProcessor();
+                    String processedMsg = messageProcessor.processReceivedString(receivedMsg);
+                    String messageType = processedMsg.split(SEP_PIPE)[0];
+                    jTextArea1.setText(jTextArea1.getText() + processedMsg + "\n");
+                    String plainReplyMessage = messageProcessor.generatePlainReplyMessage(processedMsg, messageType);
+                    
+                    if (messageType.equals(LOGIN_PREFIX)) {
+                        sessionKey=getSessionKey(plainReplyMessage);
+                        userName = processedMsg.split(SEP_PIPE)[1];
+                        encryptedReplyMessage = messageProcessor.generateEncryptedSessionMsg(plainReplyMessage, messageType, userName);
+                        if (plainReplyMessage.equals("NOUSER")) {
+                            jTextArea1.setText(jTextArea1.getText() + "no user exist with username" + userName + "\n");
+                            break;
+                        }
+                    }
+
+                    if (encryptedReplyMessage != null) {
+                        OutputStream outStream = connection.openOutputStream();
+                        outStream.write(encryptedReplyMessage.getBytes());
+                    }
+                } else {
+                    if (userName != null) {
+                        String kek = new MessageProcessor().getKEK(userName);
+                    }
+                    System.out.println("need to encrypt folder");
                     break;
                 }
                 //processCommand(command);
             }
         } catch (Exception e) {
+            System.out.println("ex from waitForInput");
             e.printStackTrace();
         }
 
@@ -273,5 +290,11 @@ public class BluetoothServer extends javax.swing.JFrame {
      */
     public void setPrivateKeyPath(String privateKeyPath) {
         this.privateKeyPath = privateKeyPath;
+    }
+
+    private String getSessionKey(String plainReplyMessage) {
+       String sessionKey=plainReplyMessage.split(SEP_MSG)[0].split(SEP_PIPE)[1];
+        System.out.println("Session key is "+sessionKey);
+        return sessionKey;
     }
 }

@@ -22,6 +22,7 @@ import org.ist.BluetoothApp.R;
 import org.ist.BluetoothApp.crypto.Crypto;
 import org.ist.BluetoothApp.crypto.KEKGenerator;
 
+
 import android.app.ActionBar;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -54,6 +55,8 @@ public class BluetoothApp extends Activity {
 	private final String SEP_MSG=";";
 	private final String LOGIN_PREFIX="LG";
 	private final String PWD_PREFIX="PW";
+	private String sessionKey;
+	private String kek;
     // Debugging
     private static final String TAG = "BluetoothChat";
     private static final boolean D = true;
@@ -212,9 +215,11 @@ public class BluetoothApp extends Activity {
            if(userName.equals("chathurika")){
         	   System.out.println("username equal");
            }
-           
+           String test="Chathura@1";
+           test=kekGen.createHash(test);
+           System.out.println("test is"+test);
            String password=passwordView.getText().toString();
-           String kek=kekGen.createHash(password);
+           kek=kekGen.createHash(password);
            System.out.println("kek is"+kek);
            //Do we need to verify username as well? Coz we already share a secret.
           // String messageToEncrypt=PWD_PREFIX.concat(SEP_PIPE).concat(password);
@@ -226,7 +231,6 @@ public class BluetoothApp extends Activity {
            String messageToSend=LOGIN_PREFIX.concat(SEP_PIPE).concat(userName);
           
            sendMessage(messageToSend);
-           System.out.println("mesage is---------"+messageToSend);
     	}
     	catch(Exception ex){
     		System.out.println("Error occured while login to the server");
@@ -314,7 +318,7 @@ public class BluetoothApp extends Activity {
                 byte[] readBuf = (byte[]) msg.obj;
                 // construct a string from the valid bytes in the buffer
                 String readMessage = new String(readBuf, 0, msg.arg1);
-                System.out.println(readMessage);
+                processServerMessage(readMessage);
                // mConversationArrayAdapter.add(mConnectedDeviceName+":  " + readMessage);
                 break;
             case MESSAGE_DEVICE_NAME:
@@ -329,7 +333,40 @@ public class BluetoothApp extends Activity {
                 break;
             }
         }
+
     };
+     void processServerMessage(String readMessage) {
+    	 try {
+ 			if (IsConnectinoAlive() && readMessage.length() > 0) {
+ 				System.out.println("read in server "+readMessage);
+ 				String decryptedMsg;
+ 				if(sessionKey==null){
+ 					//Message is the session key encrypted by KEK
+ 				Crypto crypto=new Crypto();
+ 				System.out.println("kek is"+kek);
+
+ 				decryptedMsg=crypto.decrypt(readMessage, kek);
+ 			    System.out.println("decrypted message is"+decryptedMsg);
+ 				}
+ 				else{
+ 				//message encrypted by session key
+ 					System.out.println("session key exists");
+ 				}
+ 				
+ 			}
+    	 }
+    	 catch(Exception ex){
+    		 System.out.println("Error while processing the server message");
+    		 ex.printStackTrace();
+    	 }
+	}
+ 	private Boolean IsConnectinoAlive() {
+		Boolean isConnected = false;
+		if (mChatService.getState() == BluetoothAppService.STATE_CONNECTED) {
+			isConnected = true;
+		}
+		return isConnected;
+	} 
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(D) Log.d(TAG, "onActivityResult " + resultCode);

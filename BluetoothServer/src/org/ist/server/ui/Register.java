@@ -160,7 +160,7 @@ public class Register extends javax.swing.JFrame {
            if(summaryMessage.equals("")){
             User user = new User();
             user.setUserName(jTextField1.getText());
-            user.setPassword(jTextField1.getText());
+            user.setPassword(jTextField2.getText());
             user.setEncryptedPath(jTextField4.getText());
             user.setLastUpdated(new Date());
             
