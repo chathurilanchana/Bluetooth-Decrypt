@@ -4,6 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="lib" path="E:/Semester1-CHATHURI/Security/project/bluecove-2.1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="E:/Semester1-CHATHURI/Security/project/bluecove-gpl-2.1.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="E:/Semester1-CHATHURI/Security/project/BlueTooth-Unlocker/Bluetooth-Unlocker/RemoteBluetoothServer/lib/commons-codec-1.10.jar"/>
+	<classpathentry kind="lib" path="E:/Semester1-CHATHURI/Security/project/Bluetooth-Decrypt/RemoteBluetoothServer/lib/commons-codec-1.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

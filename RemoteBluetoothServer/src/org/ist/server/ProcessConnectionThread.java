@@ -42,6 +42,7 @@ public class ProcessConnectionThread implements Runnable{
 	        	System.out.println("Received msg is "+receivedMsg);
 
 	        	MessageProcessor msgProcessor=new MessageProcessor();
+	        	
 	        	msgProcessor.processReceivedString(receivedMsg);
 	        		        	
                 // Send the obtained bytes to the UI Activity   

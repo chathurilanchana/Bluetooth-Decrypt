@@ -17,15 +17,17 @@ public class MessageProcessor {
 			KEKGenerator pwdHash = new KEKGenerator();
             Crypto crypto=new Crypto();
 			
-			System.out.println("received message is " + receivedMsg);
-			String[] messageType = receivedMsg.split(SEP_MSG);
-			if (messageType.length > 1) {
-				// This is an initial login message as we send username as
+			String[] messageType = receivedMsg.split(SEP_PIPE);
+			if (messageType.length ==2 && messageType[0].equals(LOGIN_PREFIX) ) {
+				// This is a login message
 				// plaintext
-				String username = messageType[0];
+				String username = messageType[1];
 				System.out.println("username is " + username);
-				System.out.println("Encrypted Message is "+messageType[1]);
+
 				
+				
+			} else {
+				// Totally encrypted message, receiving a nonce
 				String KEKInPC="";//This should be read after the registration part
 				String pwdInPC="";//this should be read after reg. Password stored in db as hash
                String decryptedText=crypto.decrypt(messageType[1], KEKInPC);
@@ -34,10 +36,6 @@ public class MessageProcessor {
 				//hash the username. Read from db whether 2 are equal
 			    //hash the pwd. Read from db whether 2 are equal
 				//If both true, user authenticated. Then send the Nonse and session key encrypted by KEK. 
-			} else {
-				// Totally encrypted message, a change password or nonse
-				//If reply received,encrypt folder
-				//continue with nonse within given time interval
 
 			}
 		} catch (Exception ex) {

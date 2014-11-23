@@ -210,12 +210,16 @@ public class BluetoothApp extends Activity {
            String userName = unameView.getText().toString();
            String password=passwordView.getText().toString();
            String kek=kekGen.createHash(password);
-           System.out.println(kek);
+           System.out.println("kek is"+kek);
            //Do we need to verify username as well? Coz we already share a secret.
-           String messageToEncrypt=PWD_PREFIX.concat(SEP_PIPE).concat(password);
-           String encryptedMsg=encrypter.getEncryptedMessage(messageToEncrypt,kek);
-           System.out.println("encrypted msg "+encryptedMsg);
-           String messageToSend=userName.concat(SEP_MSG).concat(encryptedMsg);
+          // String messageToEncrypt=PWD_PREFIX.concat(SEP_PIPE).concat(password);
+          // String encryptedMsg=encrypter.getEncryptedMessage(messageToEncrypt,kek);
+           //System.out.println("encrypted msg "+encryptedMsg);
+           //String decrypted=encrypter.decrypt(encryptedMsg, kek);
+           //System.out.println("decrypted is "+decrypted);
+           
+           String messageToSend=LOGIN_PREFIX.concat(SEP_PIPE).concat(userName);
+          
            sendMessage(messageToSend);
            System.out.println("mesage is---------"+messageToSend);
     	}

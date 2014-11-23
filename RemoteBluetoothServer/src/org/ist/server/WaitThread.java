@@ -41,6 +41,7 @@ public class WaitThread implements Runnable{
             String url = "btspp://localhost:" + uuid.toString() + ";name=BluetoothApp";
             notifier = (StreamConnectionNotifier)Connector.open(url);
         } catch (BluetoothStateException e) {
+        	//Upon this if folder is not encrypted, encrypt it
         	System.out.println("Bluetooth is not turned on.");
 			e.printStackTrace();
 			return;
