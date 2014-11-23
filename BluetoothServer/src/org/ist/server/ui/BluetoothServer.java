@@ -15,6 +15,8 @@ import javax.microedition.io.StreamConnectionNotifier;
 import org.ist.server.utils.MessageProcessor;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.OutputStream;
+import org.ist.server.utils.ServerUtils;
 
 /**
  *
@@ -98,13 +100,23 @@ public class BluetoothServer extends javax.swing.JFrame {
                 int command = 0;
                 int bytes;
                 byte[] buffer = new byte[1024];
-                inputStream.read(buffer);
-                String receivedMsg = new String(buffer);
-                System.out.println("Received msg is " + receivedMsg);
-
+                inputStream.read(buffer);             
+                ServerUtils utils=new ServerUtils();
+                byte[] filtered=utils.BufferFilter(buffer);//to remove 0 bytes
+                 String receivedMsg = new String(filtered);
+         
                 MessageProcessor messageProcessor = new MessageProcessor();
                 String processedMsg = messageProcessor.processReceivedString(receivedMsg);
                 jTextArea1.setText(jTextArea1.getText() + processedMsg + "\n");
+                String messageToSend=messageProcessor.generateReplyMessage(processedMsg);
+                if(messageToSend.equals("NOUSER")){
+                    jTextArea1.setText(jTextArea1.getText()+"no user exist with username"+processedMsg.split(SEP_PIPE)[1]+"\n");
+                }
+                else{
+                OutputStream outStream=connection.openOutputStream();
+                outStream.write(messageToSend.getBytes());
+                }
+              
                 // Send the obtained bytes to the UI Activity   
                 if (command == EXIT_CMD) {
                     System.out.println("finish process");

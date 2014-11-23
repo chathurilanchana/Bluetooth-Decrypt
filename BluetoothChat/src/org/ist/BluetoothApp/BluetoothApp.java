@@ -208,6 +208,11 @@ public class BluetoothApp extends Activity {
     	   KEKGenerator kekGen=new KEKGenerator();
     	   Crypto encrypter=new Crypto();
            String userName = unameView.getText().toString();
+           
+           if(userName.equals("chathurika")){
+        	   System.out.println("username equal");
+           }
+           
            String password=passwordView.getText().toString();
            String kek=kekGen.createHash(password);
            System.out.println("kek is"+kek);
@@ -302,12 +307,14 @@ public class BluetoothApp extends Activity {
                 byte[] writeBuf = (byte[]) msg.obj;
                 // construct a string from the buffer
                 String writeMessage = new String(writeBuf);
+                System.out.println(writeMessage);
                // mConversationArrayAdapter.add("Me:  " + writeMessage);
                 break;
             case MESSAGE_READ:
                 byte[] readBuf = (byte[]) msg.obj;
                 // construct a string from the valid bytes in the buffer
                 String readMessage = new String(readBuf, 0, msg.arg1);
+                System.out.println(readMessage);
                // mConversationArrayAdapter.add(mConnectedDeviceName+":  " + readMessage);
                 break;
             case MESSAGE_DEVICE_NAME:

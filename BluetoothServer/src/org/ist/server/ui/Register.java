@@ -6,6 +6,7 @@
 package org.ist.server.ui;
 
 import java.util.Date;
+import org.ist.server.crypto.KEKGenerator;
 import org.ist.server.utils.DBConnector;
 import org.ist.server.utils.ServerUtils;
 import org.ist.server.utils.User;
@@ -155,14 +156,26 @@ public class Register extends javax.swing.JFrame {
             boolean isFileExist = utils.isFileExist(jTextField4.getText());
            String summaryMessage=utils.buildSummaryMessage(isPasswordStrong,isPasswordEqual,isFileExist);
            jTextArea1.setText(summaryMessage);
+           
+           if(summaryMessage.equals("")){
             User user = new User();
             user.setUserName(jTextField1.getText());
             user.setPassword(jTextField1.getText());
             user.setEncryptedPath(jTextField4.getText());
             user.setLastUpdated(new Date());
-            user.setKEK("KEK");
+            
+               KEKGenerator kekGen=new KEKGenerator();
+               String KEK= kekGen.createHash(user.getPassword());
+               System.out.println("Generated kek is"+KEK);
+           
+            user.setKEK(KEK);
             DBConnector connector=new DBConnector();
-            connector.insertUser(user);
+            String code=connector.insertUser(user);
+            if(code.equals("EXIST")){
+                System.out.println("user already exists");
+                jTextField1.setText("");
+            }
+        }
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 

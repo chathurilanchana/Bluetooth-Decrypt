@@ -44,4 +44,16 @@ public class ServerUtils {
         System.out.println(sb.toString());
       return sb.toString();
     }
+     public  byte[] BufferFilter(byte[] packet)
+        {
+           int i = packet.length - 1;
+            while (packet[i] == 0)
+            {
+                --i;
+            }
+            byte[] temp = new byte[i + 1];
+             System.arraycopy(packet, 0, temp, 0,
+                    i+1);
+            return temp;
+        }
 }

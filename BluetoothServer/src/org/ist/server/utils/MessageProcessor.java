@@ -5,6 +5,11 @@
  */
 package org.ist.server.utils;
 
+import java.util.Random;
+import java.util.UUID;
+import org.ist.server.crypto.Crypto;
+import org.ist.server.crypto.KEKGenerator;
+
 /**
  *
  * @author Chathuri
@@ -12,10 +17,13 @@ package org.ist.server.utils;
 public class MessageProcessor {
 
     private final String LOGIN_PREFIX = "LG";
+    private final String SESSION_PREFIX="SK";
+    private final String NONSE_STRING="NS";
     private final String SEP_MSG = ";";
     private final String SEP_PIPE = ":";
 
     /**
+     * @param receivedMsg
      * @param args
      * @return 
      */
@@ -27,7 +35,7 @@ public class MessageProcessor {
 				// This is a login message
                 // plaintext
                 String username = messageType[1];
-                String message="Username is "+username;
+                String message=LOGIN_PREFIX+SEP_PIPE+username;
                 return message;
 
             } else {
@@ -52,6 +60,47 @@ public class MessageProcessor {
           return "error while login";
         }
     
+    }
+
+    public String generateReplyMessage(String processedMsg) {
+      String messagePrefix=processedMsg.split(":")[0];
+      switch(messagePrefix){
+          case LOGIN_PREFIX:
+              String username=processedMsg.split(":")[1];
+              System.out.println(username);
+             
+              DBConnector connector=new DBConnector();
+              String kek= connector.retrieveKEKForUser(username);
+              if(kek.equals("NOUSER")){
+                  return "NOUSER";
+              }
+              String plainReply=generatePlainMsgWithSession();
+              String encryptedReply=generateEncryptedSessionMsg(plainReply,kek);
+              break;
+          case NONSE_STRING:
+              break;
+      }
+      return null;
+    }
+
+    private String generatePlainMsgWithSession() {
+        String sessionKey=getSessionKey();
+        int nounce=new Random().nextInt(100000);
+        String plainText=SESSION_PREFIX.concat(SEP_PIPE).concat(sessionKey).concat(SEP_MSG).concat(NONSE_STRING).concat(SEP_PIPE).concat(Integer.toString(nounce));
+        System.out.println("Plain text is "+plainText);
+        return plainText;
+    }
+
+    private String getSessionKey() {
+       KEKGenerator kekGen=new KEKGenerator();
+       String uuId= UUID.randomUUID().toString();
+       String sessionKey=kekGen.GetSHAHash(uuId);
+       return sessionKey;
+    }
+
+    private String generateEncryptedSessionMsg(String plainReply,String kek) {
+       KEKGenerator kekGen=new KEKGenerator();
+       return null;
     }
 }
 

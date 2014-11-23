@@ -27,9 +27,11 @@ package org.ist.server.crypto;
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.security.SecureRandom;
+import java.security.MessageDigest;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.SecretKeyFactory;
+
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -51,7 +53,7 @@ public class KEKGenerator
     private final int ITERATION_INDEX = 0;
     private final int SALT_INDEX = 1;
     private final int PBKDF2_INDEX = 2;
-
+    
     /**
      * Returns a salted PBKDF2 hash of the password.
      *
@@ -61,7 +63,8 @@ public class KEKGenerator
     public String createHash(String password)
         throws NoSuchAlgorithmException, InvalidKeySpecException
     {
-        return createHash(password.toCharArray());
+    	String pwdHash=GetSHAHash(password);
+        return createHash(password.toCharArray(),pwdHash);
     }
 
     /**
@@ -70,18 +73,57 @@ public class KEKGenerator
      * @param   password    the password to hash
      * @return              a salted PBKDF2 hash of the password
      */
-    private String createHash(char[] password)
-        throws NoSuchAlgorithmException, InvalidKeySpecException
-    {
-        // Generate a random salt
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[SALT_BYTE_SIZE];
-        random.nextBytes(salt);
+    
+	// Get SHA-256 hash
+	private String GetSHAHash(String text) {
+		String hash = null;
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			md.update(text.getBytes("iso-8859-1"), 0, text.length());
+			byte[] shahash = md.digest();
+			hash = convertToHex(shahash);
+			System.out.println("HASH - " + hash);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return hash;
+	}
+	
+	// Byte to String conversion
+	private static String convertToHex(byte[] data) {
+		StringBuilder buf = new StringBuilder();
+		for (byte b : data) {
+			int halfbyte = (b >>> 4) & 0x0F;
+			int two_halfs = 0;
+			do {
+				buf.append((0 <= halfbyte) && (halfbyte <= 9) ? (char) ('0' + halfbyte)
+						: (char) ('a' + (halfbyte - 10)));
+				halfbyte = b & 0x0F;
+			} while (two_halfs++ < 1);
+		}
+		return buf.toString();
+	}
 
+	
+    private String createHash(char[] password,String pwdHash)
+    {
+    	try{
+        // Generate salt from pwdHash
+        byte[] salt = new byte[SALT_BYTE_SIZE];
+        byte[] parameterKeyBytes = pwdHash.getBytes("UTF-8");
+		System.arraycopy(parameterKeyBytes, 0, salt, 0,
+				Math.min(parameterKeyBytes.length, salt.length));
         // Hash the password
         byte[] hash = pbkdf2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
         // format iterations:salt:hash
-        return PBKDF2_ITERATIONS + ":" + toHex(salt) + ":" +  toHex(hash);
+        return toHex(hash);
+    	}
+    	catch(Exception ex){
+    		System.out.println("error while generating kek");
+    		return null;
+    	}
     }
 
     /**
