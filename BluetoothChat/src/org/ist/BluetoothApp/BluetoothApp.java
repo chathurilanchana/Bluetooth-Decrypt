@@ -211,13 +211,7 @@ public class BluetoothApp extends Activity {
     	   KEKGenerator kekGen=new KEKGenerator();
     	   Crypto encrypter=new Crypto();
            String userName = unameView.getText().toString();
-           
-           if(userName.equals("chathurika")){
-        	   System.out.println("username equal");
-           }
-           String test="Chathura@1";
-           test=kekGen.createHash(test);
-           System.out.println("test is"+test);
+          
            String password=passwordView.getText().toString();
            kek=kekGen.createHash(password);
            System.out.println("kek is"+kek);

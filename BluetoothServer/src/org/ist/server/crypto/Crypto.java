@@ -4,7 +4,10 @@
  * and open the template in the editor.
  */
 package org.ist.server.crypto;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
@@ -13,6 +16,8 @@ import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
@@ -106,5 +111,52 @@ public String getEncryptedMessage(String messageToEncrypt, String kek) {
 		plainText = cipher.doFinal(plainText);
 		return plainText;
 	}
+        
+        public  void encryptFile(InputStream in, OutputStream out,
+			String fileName, String password) throws Exception {
+
+		byte[] keyBytes=getKeyBytes(password);
+		byte[] ivBytes=getIVBytes(password);
+		// System.out.println(">>>>>>>>written"+.encrrays.toString(iv));
+
+		Cipher cipher = Cipher.getInstance("AES/CFB8/NoPadding"); // "DES/ECB/PKCS5Padding";"AES/CBC/PKCS5Padding"
+		SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
+		IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
+		cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+
+		out = new CipherOutputStream(out, cipher);
+		byte[] buf = new byte[1024];
+		int numRead = 0;
+		while ((numRead = in.read(buf)) >= 0) {
+			out.write(buf, 0, numRead);
+		}
+		out.close();
+		File oldFile = new File(fileName);
+		oldFile.delete();
+	}
+
+	public void decryptFile(InputStream in, OutputStream out,
+			String encriptedFile, String password) throws Exception {
+
+	byte[] keyBytes=getKeyBytes(password);
+		byte[] ivBytes=getIVBytes(password);
+		// System.out.println(">>>>>>>>red"+Arrays.toString(iv));
+
+		Cipher cipher = Cipher.getInstance("AES/CFB8/NoPadding"); // "DES/ECB/PKCS5Padding";"AES/CBC/PKCS5Padding"
+		SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
+		IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
+		cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+
+		in = new CipherInputStream(in, cipher);
+		byte[] buf = new byte[1024];
+		int numRead = 0;
+		while ((numRead = in.read(buf)) >= 0) {
+			out.write(buf, 0, numRead);
+		}
+		out.close();
+		File f = new File(encriptedFile);
+		f.delete();
+	}
+	
 
 }

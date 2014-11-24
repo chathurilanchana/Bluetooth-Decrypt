@@ -175,6 +175,11 @@ public class Register extends javax.swing.JFrame {
                 System.out.println("user already exists");
                 jTextField1.setText("");
             }
+            else if(code.equals("SUCCESS")){
+                //encrypt the folder
+                ServerUtils sUtils=new ServerUtils();
+                sUtils.decryptFolder(user.getEncryptedPath(), "e8f05578ff1cfca56767ecfdecad6a288d8cad3e433536f5");
+            }
         }
         }
     }//GEN-LAST:event_jButton1ActionPerformed
