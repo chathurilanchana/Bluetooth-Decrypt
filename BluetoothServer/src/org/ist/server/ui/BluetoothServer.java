@@ -16,6 +16,7 @@ import org.ist.server.utils.MessageProcessor;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.OutputStream;
+import org.ist.server.crypto.Crypto;
 import org.ist.server.crypto.KEKGenerator;
 import org.ist.server.utils.ServerUtils;
 
@@ -37,6 +38,9 @@ public class BluetoothServer extends javax.swing.JFrame {
     private final String SEP_MSG = ";";
     private final String SEP_PIPE = ":";
     private String sessionKey;
+    private String kek;
+    private int index = 0;
+    private int challengePeriod = 5000; //in milliseconds
 
     /**
      * Creates new form BluetoothServer
@@ -84,6 +88,7 @@ public class BluetoothServer extends javax.swing.JFrame {
                 message = "waiting for connection...\n";
                 jTextArea1.setText(message);
                 connection = notifier.acceptAndOpen();
+                jTextArea1.setText(jTextArea1.getText() + "Connection established with phone\n.");
                 waitForInput();
             } catch (Exception e) {
                 message = "Exception thrown while connecting\n .";
@@ -94,11 +99,15 @@ public class BluetoothServer extends javax.swing.JFrame {
 
     public void waitForInput() {
         try {
-
-            // prepare to receive data
             InputStream inputStream = connection.openInputStream();
+            OutputStream outStream = connection.openOutputStream();
             String userName = null;
             String encryptedReplyMessage = null;
+            String decryptedClientMessage = null;
+            String plainReplyMessage = null;
+            MessageProcessor messageProcessor = new MessageProcessor();
+            ServerUtils utils = new ServerUtils();
+            // boolean isFirstNonce = true;
             while (true) {
                 int command = 0;
                 int bytes;
@@ -106,37 +115,77 @@ public class BluetoothServer extends javax.swing.JFrame {
                 inputStream.read(buffer);
 
                 if (buffer[0] != 0) {
-                    ServerUtils utils = new ServerUtils();
                     byte[] filtered = utils.BufferFilter(buffer);//to remove 0 bytes
 
                     String receivedMsg = new String(filtered);
+                    System.out.println("----received message---- " + receivedMsg);
 
-                    MessageProcessor messageProcessor = new MessageProcessor();
-                    String processedMsg = messageProcessor.processReceivedString(receivedMsg);
-                    String messageType = processedMsg.split(SEP_PIPE)[0];
-                    jTextArea1.setText(jTextArea1.getText() + processedMsg + "\n");
-                    String plainReplyMessage = messageProcessor.generatePlainReplyMessage(processedMsg, messageType);
-                    
-                    if (messageType.equals(LOGIN_PREFIX)) {
-                        sessionKey=getSessionKey(plainReplyMessage);
-                        userName = processedMsg.split(SEP_PIPE)[1];
-                        encryptedReplyMessage = messageProcessor.generateEncryptedSessionMsg(plainReplyMessage, messageType, userName);
-                        if (plainReplyMessage.equals("NOUSER")) {
+                    if (sessionKey == null) {
+                        decryptedClientMessage = receivedMsg;
+                    } else {
+                        Crypto crypto = new Crypto();
+                        decryptedClientMessage = crypto.decrypt(receivedMsg, sessionKey);
+                    }
+
+                    //  String processedMsg = messageProcessor.processReceivedString(receivedMsg);
+                    String messageType = decryptedClientMessage.split(SEP_PIPE)[0];
+                    jTextArea1.setText(jTextArea1.getText() + decryptedClientMessage + "\n");
+
+                    if (index == 0 && messageType.equals(LOGIN_PREFIX)) {
+                        //sessionKey=getSessionKey(plainReplyMessage);
+                        userName = decryptedClientMessage.split(SEP_PIPE)[1];
+                        this.kek = messageProcessor.getKEK(userName);
+                         this.sessionKey = messageProcessor.generateSessionKey();
+                        plainReplyMessage = messageProcessor.generatePlainMsgWithSession(sessionKey);
+                        encryptedReplyMessage = messageProcessor.generateEncryptedMsg(plainReplyMessage, kek);
+                        if (encryptedReplyMessage.equals("NOUSER")) {
                             jTextArea1.setText(jTextArea1.getText() + "no user exist with username" + userName + "\n");
                             break;
+                        }
+                        index++;
+                    } else if (index == 1) {
+                        //client sending the first nounce, decrypt folder if nounce is correct
+                        System.out.println("decrypted client msg is " + decryptedClientMessage);
+                        boolean isNonceCorrect = messageProcessor.isNonceCorrect(decryptedClientMessage);
+                        if (isNonceCorrect)//This iis because the nonce is wrong.Simply ignore messages
+                        {
+                            //user can decrypt the KEK.So decrypt the folder for him
+                            String folderPath = utils.getFolderPath(userName);
+                            utils.decryptFolder(folderPath, kek);
+                            jTextArea1.setText(jTextArea1.getText() + "Folder decrypted\n");
+                            plainReplyMessage = messageProcessor.generatePlainNounceMessage();
+                            encryptedReplyMessage = messageProcessor.generateEncryptedMsg(plainReplyMessage, sessionKey);
+                            System.out.println("2nd message from server "+plainReplyMessage);
+                        } else {
+                            break;
+                        }
+                        index++;
+                    } else {//index==2, to check availability
+                        boolean isNonceCorrect = messageProcessor.isNonceCorrect(decryptedClientMessage);
+                        
+                        if(isNonceCorrect){
+                        Thread.sleep(challengePeriod);
+                        plainReplyMessage = messageProcessor.generatePlainNounceMessage();
+                        encryptedReplyMessage = messageProcessor.generateEncryptedMsg(plainReplyMessage, sessionKey);
+                        System.out.println("3rd message from server "+plainReplyMessage);
+                        }
+                        else{
+                            throw  new Exception();
                         }
                     }
 
                     if (encryptedReplyMessage != null) {
-                        OutputStream outStream = connection.openOutputStream();
                         outStream.write(encryptedReplyMessage.getBytes());
                     }
                 } else {
                     if (userName != null) {
-                        String kek = new MessageProcessor().getKEK(userName);
+                        sessionKey = null;
+                        String folderPath = utils.getFolderPath(userName);
+                        utils.encryptFolder(folderPath, kek);
+                        System.out.println("need to encrypt folder");
+                        jTextArea1.setText(jTextArea1.getText() + "Connection lost\n" + "Folder encrypted\n");
+                        break;
                     }
-                    System.out.println("need to encrypt folder");
-                    break;
                 }
                 //processCommand(command);
             }
@@ -290,11 +339,5 @@ public class BluetoothServer extends javax.swing.JFrame {
      */
     public void setPrivateKeyPath(String privateKeyPath) {
         this.privateKeyPath = privateKeyPath;
-    }
-
-    private String getSessionKey(String plainReplyMessage) {
-       String sessionKey=plainReplyMessage.split(SEP_MSG)[0].split(SEP_PIPE)[1];
-        System.out.println("Session key is "+sessionKey);
-        return sessionKey;
     }
 }

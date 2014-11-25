@@ -119,7 +119,7 @@ public String getEncryptedMessage(String messageToEncrypt, String kek) {
 		byte[] ivBytes=getIVBytes(password);
 		// System.out.println(">>>>>>>>written"+.encrrays.toString(iv));
 
-		Cipher cipher = Cipher.getInstance("AES/CFB8/NoPadding"); // "DES/ECB/PKCS5Padding";"AES/CBC/PKCS5Padding"
+		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding"); // "DES/ECB/PKCS5Padding";"AES/CBC/PKCS5Padding"
 		SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
 		IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
 		cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
@@ -142,7 +142,7 @@ public String getEncryptedMessage(String messageToEncrypt, String kek) {
 		byte[] ivBytes=getIVBytes(password);
 		// System.out.println(">>>>>>>>red"+Arrays.toString(iv));
 
-		Cipher cipher = Cipher.getInstance("AES/CFB8/NoPadding"); // "DES/ECB/PKCS5Padding";"AES/CBC/PKCS5Padding"
+		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding"); // "DES/ECB/PKCS5Padding";"AES/CBC/PKCS5Padding"
 		SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
 		IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
 		cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);

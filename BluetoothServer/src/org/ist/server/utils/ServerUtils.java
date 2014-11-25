@@ -85,6 +85,10 @@ public class ServerUtils {
         f.delete();
     }
 
+    public String getFolderPath(String username){
+        return new DBConnector().retrieveFolderPath(username);
+    }
+    
     public void decryptFolder(String fileName, String key) {
         try {
             File dir = new File(fileName);
@@ -111,6 +115,7 @@ public class ServerUtils {
 
     public void encryptFolder(String fileName, String key) {
         try {
+            System.out.println("folder path is "+fileName+" key is "+key);
             File dir = new File(fileName);
             File[] directoryListing = dir.listFiles();
             if (directoryListing != null) {

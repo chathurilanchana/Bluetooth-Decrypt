@@ -117,12 +117,36 @@ public class DBConnector {
             preparedStatement.setString(1, username);
             ResultSet rs = preparedStatement.executeQuery();
 
-        
+         if (!rs.isBeforeFirst()) {
+                return "NOUSER";
+            }
                 while (rs.next()) {
                     System.out.println("row exist");
                     String KEK = rs.getString("KEK");
                     System.out.println(KEK);
                     return KEK;
+                }
+        } catch (Exception ex) {
+            return "ERROR";
+        }
+        return null;
+    }
+    
+       String retrieveFolderPath(String username) {
+        PreparedStatement preparedStatement = null;
+        String selectQuery = "SELECT Filepath FROM " + dbName + " WHERE Username = ?";
+        System.out.println(selectQuery);
+        try {
+            preparedStatement = getConnection().prepareStatement(selectQuery);
+            preparedStatement.setString(1, username);
+            ResultSet rs = preparedStatement.executeQuery();
+
+        
+                while (rs.next()) {
+                    System.out.println("row exist");
+                    String filePath = rs.getString("Filepath");
+                    System.out.println(filePath);
+                    return filePath;
                 }
         } catch (Exception ex) {
             return "ERROR";

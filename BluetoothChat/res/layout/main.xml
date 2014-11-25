@@ -3,75 +3,67 @@
     android:layout_width="fill_parent"
     android:layout_height="510dip"
     android:layout_marginTop="10dip"
-    android:background="#DDDDDD" >
+    >
+
+
+
+   <TextView
+      android:id="@+id/textView2"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentLeft="true"
+      android:layout_below="@+id/textView1"
+      android:layout_marginTop="100dp"
+      android:text="username"
+      android:textAppearance="?android:attr/textAppearanceMedium" />
+
+   <EditText
+      android:id="@+id/et_un"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignBottom="@+id/textView2"
+      android:layout_marginLeft="32dp"
+      android:layout_toRightOf="@+id/textView2"
+      android:ems="10" >
+
+      <requestFocus />
+   </EditText>
+
+   <TextView
+      android:id="@+id/textView3"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignLeft="@+id/textView2"
+      android:layout_below="@+id/textView2"
+      android:layout_marginTop="38dp"
+      android:text="password"
+      android:textAppearance="?android:attr/textAppearanceMedium" />
+
+   <EditText
+      android:id="@+id/et_pw"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignBottom="@+id/textView3"
+      android:layout_alignLeft="@+id/et_un"
+      android:ems="10"
+      android:inputType="textPassword" />
+
+   <Button
+      android:id="@+id/btn_login"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/et_pw"
+      android:layout_centerHorizontal="true"
+      android:layout_marginTop="74dp"
+      android:text="Login" />
 
     <TextView
-        android:id="@+id/tv_un"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="10dip"
-        android:layout_marginRight="9dip"
-        android:layout_marginTop="20dip"
-        android:text="User Name:"
-        android:textColor="#444444"
-        android:textSize="10pt" />
-
-    <EditText
-        android:id="@+id/et_un"
-        android:layout_width="150dip"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/tv_un"
-        android:layout_toRightOf="@id/tv_un"
-        android:background="@android:drawable/editbox_background"
-        android:inputType="text"
-        android:textColor="#000000" />
-
-    <TextView
-        android:id="@+id/tv_pw"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@id/tv_un"
-        android:layout_marginLeft="10dip"
-        android:layout_marginRight="9dip"
-        android:layout_marginTop="15dip"
-        android:text="Password:"
-        android:textColor="#444444"
-        android:textSize="10pt" />
-
-    <EditText
-        android:id="@+id/et_pw"
-        android:layout_width="150dip"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/tv_pw"
-        android:layout_below="@id/et_un"
-        android:layout_marginLeft="10dip"
-        android:layout_toRightOf="@id/tv_pw"
-        android:background="@android:drawable/editbox_background"
-        android:inputType="textPassword"
-        android:textColor="#000000" />
-
-    <Button
-        android:id="@+id/btn_login"
-        android:layout_width="100dip"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/et_pw"
-        android:layout_marginLeft="150dip"
-        android:layout_marginTop="15dip"
-        android:text="Login" />
-
-    <TextView
-        android:id="@+id/tv_error"
-        android:layout_width="400dip"
-        android:layout_height="100dip"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@id/btn_login"
-        android:layout_marginLeft="120dip"
-        android:layout_marginRight="9dip"
-        android:layout_marginTop="15dip"
-        android:text=""
-        android:textColor="#AA0000"
-        android:textSize="7pt" />
+        android:id="@+id/txt_message"
+        android:layout_width="176dp"
+        android:layout_height="146dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="150dip"
+        android:gravity="center"
+        android:text="" />
 
 </RelativeLayout>
