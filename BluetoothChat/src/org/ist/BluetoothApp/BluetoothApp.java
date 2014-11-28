@@ -231,19 +231,8 @@ public class BluetoothApp extends Activity {
 			String password = passwordView.getText().toString();
 			kek = kekGen.createHash(password);
 			System.out.println("kek is" + kek);
-			// Do we need to verify username as well? Coz we already share a
-			// secret.
-			// String
-			// messageToEncrypt=PWD_PREFIX.concat(SEP_PIPE).concat(password);
-			// String
-			// encryptedMsg=encrypter.getEncryptedMessage(messageToEncrypt,kek);
-			// System.out.println("encrypted msg "+encryptedMsg);
-			// String decrypted=encrypter.decrypt(encryptedMsg, kek);
-			// System.out.println("decrypted is "+decrypted);
-
 			String messageToSend = LOGIN_PREFIX.concat(SEP_PIPE).concat(
 					userName);
-
 			sendMessage(messageToSend);
 		} catch (Exception ex) {
 			System.out.println("Error occured while login to the server");
@@ -362,24 +351,20 @@ public class BluetoothApp extends Activity {
 
 	void processServerMessage(String readMessage) {
 		try {
-			String encryptedReply =null;
+			String encryptedReply = null;
 			if (IsConnectinoAlive() && readMessage.length() > 0) {
-				System.out.println("read in server " + readMessage);
 				String decryptedMsg;
 				Crypto crypto = new Crypto();
-				if (sessionKey == null) {//if we think about periodic nonce part then we can use else part
+				if (sessionKey == null) {// if we think about periodic nonce
+											// part then we can use else part
 					// Message is the session key encrypted by KEK
 					UpdateMessage("Authenticating....");
 					decryptedMsg = crypto.decrypt(readMessage, kek);
 					UpdateMessage("Authenticated....");
-					System.out.println("decrypted message is" + decryptedMsg);
-
+				} else {
+					decryptedMsg = crypto.decrypt(readMessage, sessionKey);
 				}
-				else{
-					decryptedMsg=crypto.decrypt(readMessage, sessionKey);
-					System.out.println("decrypted message is "+readMessage);
-				}
-				encryptedReply= generateEncryptedReplyForServer(decryptedMsg);
+				encryptedReply = generateEncryptedReplyForServer(decryptedMsg);
 				sendMessage(encryptedReply);
 			}
 		} catch (Exception ex) {
@@ -396,7 +381,6 @@ public class BluetoothApp extends Activity {
 	private String generateEncryptedReplyForServer(String decryptedMessage) {
 		// TODO Auto-generated method stub
 		String messageType = decryptedMessage.split(SEP_PIPE)[0];
-		String plainMessage;
 		String nounce = null;
 		Crypto crypto = new Crypto();
 		if (messageType.equals(SESSION_PREFIX)) {
@@ -405,17 +389,13 @@ public class BluetoothApp extends Activity {
 			this.sessionKey = sessionPair.split(SEP_PIPE)[1];
 			String nouncePair = decryptedMessage.split(SEP_MSG)[1];
 			nounce = nouncePair.split(SEP_PIPE)[1];
-			System.out.println("first nounce is "
-					+ nounce);
 		}
-		
-		  else{ //NS:1000 nounce=decryptedMessage.split(SEP_PIPE)[1];
-		  nounce=decryptedMessage.split(SEP_PIPE)[1];
-		  System.out.println("second nouce is "+nounce);
-		  }
-		 
+
+		else { // NS:1000 nounce=decryptedMessage.split(SEP_PIPE)[1];
+			nounce = decryptedMessage.split(SEP_PIPE)[1];
+		}
+
 		int replyNounce = generateReplyNounce(nounce);
-		System.out.println(replyNounce);
 		String replyNounceStr = Integer.toString(replyNounce);
 		String plainTextReply = NOUNCE_PREFIX.concat(SEP_PIPE).concat(
 				replyNounceStr);

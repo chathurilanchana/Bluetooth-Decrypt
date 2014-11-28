@@ -102,8 +102,8 @@ public class ServerUtils {
         try {
             File dir = new File(fileName);
             File[] directoryListing = dir.listFiles();
-            String cmd = "attrib -h "+fileName; //"attrib +h E:\\input"
-            Runtime.getRuntime().exec(cmd);
+           // String cmd = "attrib -h "+fileName; //"attrib +h E:\\input"
+           // Runtime.getRuntime().exec(cmd);
             if (directoryListing != null) {
                 for (File child : directoryListing) {
                     String childName = child.getAbsolutePath();
@@ -128,8 +128,8 @@ public class ServerUtils {
         try {
             File dir = new File(fileName);
             File[] directoryListing = dir.listFiles();
-            String cmd = "attrib +h "+fileName; //"attrib +h E:\\input"; 
-            Runtime.getRuntime().exec(cmd);
+           // String cmd = "attrib +h "+fileName; //"attrib +h E:\\input"; 
+           // Runtime.getRuntime().exec(cmd);
             if (directoryListing != null) {
                 for (File child : directoryListing) {
                     String childName = child.getAbsolutePath();
