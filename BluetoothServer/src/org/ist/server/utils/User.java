@@ -15,6 +15,7 @@ public class User {
   private String userName;
   private String password;
   private String KEK;
+  private String fileEncryptionKey;
   private Date lastUpdated;
   private String encryptedPath;
 
@@ -86,5 +87,19 @@ public class User {
      */
     public void setEncryptedPath(String encryptedPath) {
         this.encryptedPath = encryptedPath;
+    }
+
+    /**
+     * @return the fileEncryptionKey
+     */
+    public String getFileEncryptionKey() {
+        return fileEncryptionKey;
+    }
+
+    /**
+     * @param fileEncryptionKey the fileEncryptionKey to set
+     */
+    public void setFileEncryptionKey(String fileEncryptionKey) {
+        this.fileEncryptionKey = fileEncryptionKey;
     }
 }

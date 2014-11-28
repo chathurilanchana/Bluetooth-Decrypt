@@ -7,6 +7,7 @@ package org.ist.server.utils;
 
 import java.util.Random;
 import java.util.UUID;
+import org.ist.server.crypto.AssymetricEncryptionHandler;
 import org.ist.server.crypto.Crypto;
 import org.ist.server.crypto.KEKGenerator;
 
@@ -21,9 +22,11 @@ public class MessageProcessor {
     private final String NONSE_STRING = "NS";
     private final String SEP_MSG = ";";
     private final String SEP_PIPE = ":";
-    private int nounce;
+    private int nounce=0;
 
     /**
+     * @param userName
+     * @param privateKeyPath
      * @param receivedMsg
      * @param args
      * @return
@@ -60,21 +63,27 @@ public class MessageProcessor {
      }
 
      }*/
-    public String getKEK(String userName) {
+     /**
+     * @param userName
+     * @param privateKeyPath
+     * @return
+     */
+    public String getKEK(String userName,String privateKeyPath) {
         DBConnector connector = new DBConnector();
-        return connector.retrieveKEKForUser(userName);
+        String KEK= connector.retrieveKEKForUser(userName);
+        AssymetricEncryptionHandler assymHandler=new AssymetricEncryptionHandler();
+        return assymHandler.decryptByPrivateKey(KEK,privateKeyPath);
     }
 
 
     public String generatePlainMsgWithSession(String sessionKey) {
-        this.nounce = new Random().nextInt(100000);
+        this.nounce = new Random().nextInt(400000);
         String plainText = SESSION_PREFIX.concat(SEP_PIPE).concat(sessionKey).concat(SEP_MSG).concat(NONSE_STRING).concat(SEP_PIPE).concat(Integer.toString(getNounce()));
-        System.out.println("Plain text is " + plainText);
         return plainText;
     }
     
     public String generatePlainNounceMessage(){
-        this.nounce=new Random().nextInt(100000);
+        this.nounce=(nounce==0)?new Random().nextInt(100000):nounce+2;
         String plainMessage=NONSE_STRING.concat(SEP_PIPE).concat(Integer.toString(nounce));
         return plainMessage;
     }
@@ -85,16 +94,16 @@ public class MessageProcessor {
         return kekGen.GetSHAHash(uuId);
 
     }
+    
+ 
 
     public String generateEncryptedMsg(String plainReply,String key) {
         Crypto crypto = new Crypto();
-        System.out.println("key is " + key);
 
         if (key.equals("NOUSER")) {
             return "NOUSER";
         }
         String encrptedText = crypto.getEncryptedMessage(plainReply, key);
-        System.out.println("encrypted msg " + encrptedText);
         return encrptedText;
     }
 
@@ -120,5 +129,12 @@ public class MessageProcessor {
       }
       return true;
      
+    }
+
+    public String getFolderEncryptionKey(String userName, String privateKeyPath) {
+        DBConnector connector = new DBConnector();
+        String encryptedFolderEncryptionKey= connector.retrieveFileEncryptionKeyForUser(userName);
+        AssymetricEncryptionHandler assymHandler=new AssymetricEncryptionHandler();
+        return assymHandler.decryptByPrivateKey(encryptedFolderEncryptionKey,privateKeyPath);
     }
 }

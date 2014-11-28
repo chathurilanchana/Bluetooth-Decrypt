@@ -16,6 +16,8 @@ import org.ist.server.utils.MessageProcessor;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.OutputStream;
+import java.util.Date;
+import javax.bluetooth.RemoteDevice;
 import org.ist.server.crypto.Crypto;
 import org.ist.server.crypto.KEKGenerator;
 import org.ist.server.utils.ServerUtils;
@@ -39,8 +41,10 @@ public class BluetoothServer extends javax.swing.JFrame {
     private final String SEP_PIPE = ":";
     private String sessionKey;
     private String kek;
+    private String folderEncryptionKey;
     private int index = 0;
-    private int challengePeriod = 5000; //in milliseconds
+    private final int challengePeriod = 5000; //in milliseconds
+    private String folderPath = null;
 
     /**
      * Creates new form BluetoothServer
@@ -60,27 +64,25 @@ public class BluetoothServer extends javax.swing.JFrame {
     private void waitForConnection() {
         // retrieve the local Bluetooth device object
         LocalDevice local = null;
-
-        StreamConnectionNotifier notifier;
-
+        StreamConnectionNotifier notifier = null;
         String message;
+        sessionKey = null;
+        kek = null;
+        index = 0;
+        folderPath = null;
+
         // setup the server to listen for connection
         try {
             local = LocalDevice.getLocalDevice();
-            local.setDiscoverable(DiscoveryAgent.GIAC);
+            //local.setDiscoverable(DiscoveryAgent.GIAC);
 
-            UUID uuid = new UUID("8ce255c0200a11e0ac640800200c9a66", false);
-            System.out.println(uuid.toString());
-
+            UUID uuid = new UUID("8ce255c0200a11e0ac640800200c9a67", false);
             String url = "btspp://localhost:" + uuid.toString() + ";name=BluetoothApp";
             notifier = (StreamConnectionNotifier) Connector.open(url);
         } catch (Exception e) {
-            //Upon this if folder is not encrypted, encrypt it
-            message = "Bluetooth is not turned on.\n";
-            System.err.println(message);
-            jTextArea1.setText(message);
             e.printStackTrace();
-            return;
+            message = "Bluetooth is not turned on.\n";
+            jTextArea1.setText(jTextArea1.getText() + message);
         }
         // waiting for connection
         while (true) {
@@ -91,34 +93,32 @@ public class BluetoothServer extends javax.swing.JFrame {
                 jTextArea1.setText(jTextArea1.getText() + "Connection established with phone\n.");
                 waitForInput();
             } catch (Exception e) {
-                message = "Exception thrown while connecting\n .";
-                jTextArea1.setText(jTextArea1.getText() + message);
+                e.printStackTrace();
             }
         }
     }
 
     public void waitForInput() {
+        String userName = null;
+        InputStream inputStream = null;
+        OutputStream outStream = null;
         try {
-            InputStream inputStream = connection.openInputStream();
-            OutputStream outStream = connection.openOutputStream();
-            String userName = null;
+            inputStream = connection.openInputStream();
+            outStream = connection.openOutputStream();
             String encryptedReplyMessage = null;
             String decryptedClientMessage = null;
             String plainReplyMessage = null;
             MessageProcessor messageProcessor = new MessageProcessor();
             ServerUtils utils = new ServerUtils();
+
             // boolean isFirstNonce = true;
             while (true) {
-                int command = 0;
-                int bytes;
                 byte[] buffer = new byte[1024];
                 inputStream.read(buffer);
 
                 if (buffer[0] != 0) {
                     byte[] filtered = utils.BufferFilter(buffer);//to remove 0 bytes
-
                     String receivedMsg = new String(filtered);
-                    System.out.println("----received message---- " + receivedMsg);
 
                     if (sessionKey == null) {
                         decryptedClientMessage = receivedMsg;
@@ -129,13 +129,14 @@ public class BluetoothServer extends javax.swing.JFrame {
 
                     //  String processedMsg = messageProcessor.processReceivedString(receivedMsg);
                     String messageType = decryptedClientMessage.split(SEP_PIPE)[0];
-                    jTextArea1.setText(jTextArea1.getText() + decryptedClientMessage + "\n");
+                    jTextArea1.setText(jTextArea1.getText() + receivedMsg + "\n");
 
                     if (index == 0 && messageType.equals(LOGIN_PREFIX)) {
                         //sessionKey=getSessionKey(plainReplyMessage);
                         userName = decryptedClientMessage.split(SEP_PIPE)[1];
-                        this.kek = messageProcessor.getKEK(userName);
-                         this.sessionKey = messageProcessor.generateSessionKey();
+                        this.kek = messageProcessor.getKEK(userName, privateKeyPath);
+                        this.folderEncryptionKey = messageProcessor.getFolderEncryptionKey(userName, privateKeyPath);
+                        this.sessionKey = messageProcessor.generateSessionKey();
                         plainReplyMessage = messageProcessor.generatePlainMsgWithSession(sessionKey);
                         encryptedReplyMessage = messageProcessor.generateEncryptedMsg(plainReplyMessage, kek);
                         if (encryptedReplyMessage.equals("NOUSER")) {
@@ -145,32 +146,27 @@ public class BluetoothServer extends javax.swing.JFrame {
                         index++;
                     } else if (index == 1) {
                         //client sending the first nounce, decrypt folder if nounce is correct
-                        System.out.println("decrypted client msg is " + decryptedClientMessage);
                         boolean isNonceCorrect = messageProcessor.isNonceCorrect(decryptedClientMessage);
                         if (isNonceCorrect)//This iis because the nonce is wrong.Simply ignore messages
-                        {
-                            //user can decrypt the KEK.So decrypt the folder for him
-                            String folderPath = utils.getFolderPath(userName);
-                            utils.decryptFolder(folderPath, kek);
+                        {                           //user can decrypt the KEK.So decrypt the folder for him
+                            this.folderPath = utils.getFolderPath(userName, privateKeyPath);
+                            utils.decryptFolder(folderPath, folderEncryptionKey);
                             jTextArea1.setText(jTextArea1.getText() + "Folder decrypted\n");
                             plainReplyMessage = messageProcessor.generatePlainNounceMessage();
                             encryptedReplyMessage = messageProcessor.generateEncryptedMsg(plainReplyMessage, sessionKey);
-                            System.out.println("2nd message from server "+plainReplyMessage);
                         } else {
-                            break;
+                            continue;
                         }
                         index++;
                     } else {//index==2, to check availability
                         boolean isNonceCorrect = messageProcessor.isNonceCorrect(decryptedClientMessage);
-                        
-                        if(isNonceCorrect){
-                        Thread.sleep(challengePeriod);
-                        plainReplyMessage = messageProcessor.generatePlainNounceMessage();
-                        encryptedReplyMessage = messageProcessor.generateEncryptedMsg(plainReplyMessage, sessionKey);
-                        System.out.println("3rd message from server "+plainReplyMessage);
-                        }
-                        else{
-                            throw  new Exception();
+
+                        if (isNonceCorrect) {
+                            Thread.sleep(challengePeriod);
+                            plainReplyMessage = messageProcessor.generatePlainNounceMessage();
+                            encryptedReplyMessage = messageProcessor.generateEncryptedMsg(plainReplyMessage, sessionKey);
+                        } else {
+                            throw new Exception();
                         }
                     }
 
@@ -178,20 +174,24 @@ public class BluetoothServer extends javax.swing.JFrame {
                         outStream.write(encryptedReplyMessage.getBytes());
                     }
                 } else {
-                    if (userName != null) {
-                        sessionKey = null;
-                        String folderPath = utils.getFolderPath(userName);
-                        utils.encryptFolder(folderPath, kek);
-                        System.out.println("need to encrypt folder");
-                        jTextArea1.setText(jTextArea1.getText() + "Connection lost\n" + "Folder encrypted\n");
-                        break;
-                    }
+                    inputStream.close();
+                    outStream.close();
+                    handleForLostConnection(userName);
+                    break;
                 }
                 //processCommand(command);
             }
         } catch (Exception e) {
+            if (userName != null) {
+                try {
+                    inputStream.close();
+                    outStream.close();
+                } catch (Exception ex) {
+                }
+                handleForLostConnection(userName);
+
+            }
             System.out.println("ex from waitForInput");
-            e.printStackTrace();
         }
 
     }
@@ -207,21 +207,18 @@ public class BluetoothServer extends javax.swing.JFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
-
-        jButton1.setText("Register");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
 
         jButton2.setText("Close");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -238,9 +235,7 @@ public class BluetoothServer extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(31, 31, 31))
         );
         layout.setVerticalGroup(
@@ -251,8 +246,6 @@ public class BluetoothServer extends javax.swing.JFrame {
                 .addContainerGap(22, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1)
-                .addGap(18, 18, 18)
                 .addComponent(jButton2)
                 .addGap(95, 95, 95))
         );
@@ -260,14 +253,17 @@ public class BluetoothServer extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
         System.exit(0);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        if (folderEncryptionKey != null && folderPath != null && sessionKey != null) {
+            ServerUtils utils = new ServerUtils();
+            utils.encryptFolder(folderPath, folderEncryptionKey);
+    }//GEN-LAST:event_formWindowClosing
+    }
 
     /**
      * @param args the command line arguments
@@ -307,7 +303,6 @@ public class BluetoothServer extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
@@ -340,4 +335,17 @@ public class BluetoothServer extends javax.swing.JFrame {
     public void setPrivateKeyPath(String privateKeyPath) {
         this.privateKeyPath = privateKeyPath;
     }
+
+    private void handleForLostConnection(String userName) {
+        try {
+            connection.close();
+        } catch (Exception ex) {
+        }
+        ServerUtils utils = new ServerUtils();
+        sessionKey = null;
+        utils.encryptFolder(folderPath, folderEncryptionKey);
+        jTextArea1.setText(jTextArea1.getText() + "Connection lost\n" + "Folder encrypted\n");
+        waitForConnection();
+    }
+
 }

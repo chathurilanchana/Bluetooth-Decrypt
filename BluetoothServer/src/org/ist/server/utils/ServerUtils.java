@@ -10,9 +10,11 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.Cipher;
+import org.ist.server.crypto.AssymetricEncryptionHandler;
 import org.ist.server.crypto.Crypto;
 
 /**
@@ -37,6 +39,10 @@ public class ServerUtils {
     public boolean isFileExist(String filePath) {
         File f = new File(filePath);
         return f.isDirectory();
+    }
+    
+      public String generateFolderEncryptionKey(){
+        return UUID.randomUUID().toString(); 
     }
 
     public String buildSummaryMessage(boolean passwordStrong, boolean passwordEqual, boolean fileExist) {
@@ -75,9 +81,9 @@ public class ServerUtils {
                 new FileOutputStream(outputFile));
         Crypto crypto = new Crypto();
         if (mode == Cipher.ENCRYPT_MODE) {
-            crypto.encryptFile(is, os, inputFile, password);
+            crypto.encryptFile(is, os, inputFile, outputFile, password);
         } else if (mode == Cipher.DECRYPT_MODE) {
-            crypto.decryptFile(is, os, inputFile, password);
+            crypto.decryptFile(is, os, inputFile, outputFile, password);
         }
         is.close();
         os.close();
@@ -85,14 +91,19 @@ public class ServerUtils {
         f.delete();
     }
 
-    public String getFolderPath(String username){
-        return new DBConnector().retrieveFolderPath(username);
+    public String getFolderPath(String username, String privateKey) {
+        AssymetricEncryptionHandler assymHandler = new AssymetricEncryptionHandler();
+        String folderPath = new DBConnector().retrieveFolderPath(username);
+        String folderDecryptedByAdminKey = assymHandler.decryptByPrivateKey(folderPath, privateKey);
+        return folderDecryptedByAdminKey;
     }
-    
+
     public void decryptFolder(String fileName, String key) {
         try {
             File dir = new File(fileName);
             File[] directoryListing = dir.listFiles();
+            String cmd = "attrib -h "+fileName; //"attrib +h E:\\input"
+            Runtime.getRuntime().exec(cmd);
             if (directoryListing != null) {
                 for (File child : directoryListing) {
                     String childName = child.getAbsolutePath();
@@ -115,9 +126,10 @@ public class ServerUtils {
 
     public void encryptFolder(String fileName, String key) {
         try {
-            System.out.println("folder path is "+fileName+" key is "+key);
             File dir = new File(fileName);
             File[] directoryListing = dir.listFiles();
+            String cmd = "attrib +h "+fileName; //"attrib +h E:\\input"; 
+            Runtime.getRuntime().exec(cmd);
             if (directoryListing != null) {
                 for (File child : directoryListing) {
                     String childName = child.getAbsolutePath();

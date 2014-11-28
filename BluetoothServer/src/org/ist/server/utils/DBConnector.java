@@ -65,7 +65,7 @@ public class DBConnector {
 
         PreparedStatement preparedStatement = null;
         String createQuery = "CREATE TABLE IF NOT EXISTS " + dbName + "(Username VARCHAR(500) NOT NULL, "
-                + "KEK VARCHAR(500) NOT NULL, " + "Filepath VARCHAR(500) NOT NULL" + ")";
+                + "KEK VARCHAR(500) NOT NULL, " + "FileEncryptionKey VARCHAR(500) NOT NULL, "+ "Filepath VARCHAR(500) NOT NULL" + ")";
 
         try {
             preparedStatement = getConnection().prepareStatement(createQuery);
@@ -85,22 +85,22 @@ public class DBConnector {
                 return "EXIST";
             }
         } catch (Exception ex) {
-            System.out.println("error while selecting user");
+            ex.printStackTrace();
             return "ERROR";
         }
 //ResultSet rs = stmt.executeQuery("SELECT Lname FROM Customers WHERE Snum = 2001");
 
-        String insertQuery = "insert into " + dbName + " VALUES (?,?,?)";
+        String insertQuery = "insert into " + dbName + " VALUES (?,?,?,?)";
 
         try {
             preparedStatement = getConnection().prepareStatement(insertQuery);
             preparedStatement.setString(1, user.getUserName());
             preparedStatement.setString(2, user.getKEK());
-            preparedStatement.setString(3, user.getEncryptedPath());
+            preparedStatement.setString(3, user.getFileEncryptionKey());
+            preparedStatement.setString(4, user.getEncryptedPath());
             preparedStatement.executeUpdate();
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.out.println("table not created");
             return "ERROR";
 
         }
@@ -111,7 +111,6 @@ public class DBConnector {
     String retrieveKEKForUser(String username) {
         PreparedStatement preparedStatement = null;
         String selectQuery = "SELECT KEK FROM " + dbName + " WHERE Username = ?";
-        System.out.println(selectQuery);
         try {
             preparedStatement = getConnection().prepareStatement(selectQuery);
             preparedStatement.setString(1, username);
@@ -121,10 +120,31 @@ public class DBConnector {
                 return "NOUSER";
             }
                 while (rs.next()) {
-                    System.out.println("row exist");
                     String KEK = rs.getString("KEK");
-                    System.out.println(KEK);
                     return KEK;
+                }
+        } catch (Exception ex) {
+            return "ERROR";
+        }
+        return null;
+    }
+    
+    
+       String retrieveFileEncryptionKeyForUser(String username) {
+        PreparedStatement preparedStatement = null;
+        String selectQuery = "SELECT FileEncryptionKey FROM " + dbName + " WHERE Username = ?";
+        try {
+            preparedStatement = getConnection().prepareStatement(selectQuery);
+            preparedStatement.setString(1, username);
+            ResultSet rs = preparedStatement.executeQuery();
+
+         if (!rs.isBeforeFirst()) {
+                return "NOUSER";
+            }
+                while (rs.next()) {
+                    String fkey = rs.getString("FileEncryptionKey");
+                    System.out.println(fkey);
+                    return fkey;
                 }
         } catch (Exception ex) {
             return "ERROR";
@@ -135,7 +155,6 @@ public class DBConnector {
        String retrieveFolderPath(String username) {
         PreparedStatement preparedStatement = null;
         String selectQuery = "SELECT Filepath FROM " + dbName + " WHERE Username = ?";
-        System.out.println(selectQuery);
         try {
             preparedStatement = getConnection().prepareStatement(selectQuery);
             preparedStatement.setString(1, username);
@@ -143,9 +162,7 @@ public class DBConnector {
 
         
                 while (rs.next()) {
-                    System.out.println("row exist");
                     String filePath = rs.getString("Filepath");
-                    System.out.println(filePath);
                     return filePath;
                 }
         } catch (Exception ex) {
@@ -153,4 +170,5 @@ public class DBConnector {
         }
         return null;
     }
-}
+
+  }

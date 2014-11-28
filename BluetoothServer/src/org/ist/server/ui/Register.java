@@ -6,6 +6,7 @@
 package org.ist.server.ui;
 
 import java.util.Date;
+import org.ist.server.crypto.AssymetricEncryptionHandler;
 import org.ist.server.crypto.KEKGenerator;
 import org.ist.server.utils.DBConnector;
 import org.ist.server.utils.ServerUtils;
@@ -40,12 +41,14 @@ public class Register extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
         jTextField4 = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
+        jPasswordField1 = new javax.swing.JPasswordField();
+        jPasswordField2 = new javax.swing.JPasswordField();
+        jLabel5 = new javax.swing.JLabel();
+        jTextField2 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -63,12 +66,6 @@ public class Register extends javax.swing.JFrame {
             }
         });
 
-        jTextField3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField3ActionPerformed(evt);
-            }
-        });
-
         jButton1.setText("Register");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -80,6 +77,16 @@ public class Register extends javax.swing.JFrame {
         jTextArea1.setForeground(new java.awt.Color(255, 0, 51));
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
+
+        jPasswordField1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jPasswordField1ActionPerformed(evt);
+            }
+        });
+
+        jPasswordField2.setToolTipText("");
+
+        jLabel5.setText("Admin Public Key Path");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -94,21 +101,21 @@ public class Register extends javax.swing.JFrame {
                         .addGap(24, 24, 24)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(30, 30, 30)))
-                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(49, 49, 49)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jTextField1)
-                            .addComponent(jTextField2)
+                            .addComponent(jTextField4)
+                            .addComponent(jPasswordField1, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jPasswordField2)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jButton1)
                                 .addGap(0, 133, Short.MAX_VALUE))
-                            .addComponent(jTextField4)
-                            .addComponent(jTextField3, javax.swing.GroupLayout.Alignment.TRAILING))))
+                            .addComponent(jTextField2))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -119,21 +126,25 @@ public class Register extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                    .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPasswordField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4)
                     .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
                 .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -141,46 +152,46 @@ public class Register extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        if (jTextField1.getText().equals("")) {
-            System.out.println("im empty");
-        }
-
-        if (!jTextField1.getText().equals("") && !jTextField2.getText().equals("") && !jTextField3.getText().equals("") && !jTextField4.getText().equals("")) {
+        String password = new String(jPasswordField1.getPassword());
+        String confirmPassword = new String(jPasswordField2.getPassword());
+        String adminPublicKeyPath = jTextField2.getText();
+        if (!jTextField1.getText().equals("") && !password.equals("") && !password.equals("") && !confirmPassword.equals("")) {
             ServerUtils utils = new ServerUtils();
-            boolean isPasswordStrong = utils.isPasswordStrong(jTextField2.getText(), passwordRegex);
-            if (isPasswordStrong) {
-                System.out.println("password is Strong");
-            }
-            boolean isPasswordEqual = utils.isPasswordEqual(jTextField2.getText(), jTextField3.getText());
+            boolean isPasswordStrong = utils.isPasswordStrong(password, passwordRegex);
+            boolean isPasswordEqual = utils.isPasswordEqual(password, confirmPassword);
             boolean isFileExist = utils.isFileExist(jTextField4.getText());
-           String summaryMessage=utils.buildSummaryMessage(isPasswordStrong,isPasswordEqual,isFileExist);
-           jTextArea1.setText(summaryMessage);
-           
-           if(summaryMessage.equals("")){
-            User user = new User();
-            user.setUserName(jTextField1.getText());
-            user.setPassword(jTextField2.getText());
-            user.setEncryptedPath(jTextField4.getText());
-            user.setLastUpdated(new Date());
-            
-               KEKGenerator kekGen=new KEKGenerator();
-               String KEK= kekGen.createHash(user.getPassword());
-               System.out.println("Generated kek is"+KEK);
-           
-            user.setKEK(KEK);
-            DBConnector connector=new DBConnector();
-            String code=connector.insertUser(user);
-            if(code.equals("EXIST")){
-                System.out.println("user already exists");
-                jTextField1.setText("");
+            String summaryMessage = utils.buildSummaryMessage(isPasswordStrong, isPasswordEqual, isFileExist);
+            jTextArea1.setText(summaryMessage);
+
+            if (summaryMessage.equals("")) {
+                AssymetricEncryptionHandler assymetricHandler = new AssymetricEncryptionHandler();
+                DBConnector connector = new DBConnector();
+                KEKGenerator kekGen = new KEKGenerator();
+                User user = new User();
+                user.setUserName(jTextField1.getText());
+                user.setPassword(password);
+                String encryptedFolderPath = assymetricHandler.encryptByPublicKey(jTextField4.getText(), adminPublicKeyPath);
+                user.setEncryptedPath(encryptedFolderPath);
+                user.setLastUpdated(new Date());
+
+                String KEK = kekGen.createHash(user.getPassword());
+                String encryptedKEK = assymetricHandler.encryptByPublicKey(KEK, adminPublicKeyPath);
+                user.setKEK(encryptedKEK);
+                
+                String folderEncryptionKey=utils.generateFolderEncryptionKey();
+                String encryptedFolderEncryptionKey=assymetricHandler.encryptByPublicKey(folderEncryptionKey, adminPublicKeyPath);
+                user.setFileEncryptionKey(encryptedFolderEncryptionKey);
+                String code = connector.insertUser(user);
+                
+                if (code.equals("EXIST")) {
+                    jTextField1.setText("user already exists");
+                } else if (code.equals("SUCCESS")) {
+                    //encrypt the folder
+                    ServerUtils sUtils = new ServerUtils();
+                    sUtils.encryptFolder(jTextField4.getText(), folderEncryptionKey);
+                    jTextArea1.setText("User created and folder encrypted");
+                }
             }
-            else if(code.equals("SUCCESS")){
-                //encrypt the folder
-                ServerUtils sUtils=new ServerUtils();
-                sUtils.encryptFolder(user.getEncryptedPath(), KEK);
-            }
-        }
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -188,9 +199,9 @@ public class Register extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
 
-    private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField3ActionPerformed
+    private void jPasswordField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField1ActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField3ActionPerformed
+    }//GEN-LAST:event_jPasswordField1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -233,11 +244,13 @@ public class Register extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JPasswordField jPasswordField1;
+    private javax.swing.JPasswordField jPasswordField2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
     private javax.swing.JTextField jTextField4;
     // End of variables declaration//GEN-END:variables
 }
