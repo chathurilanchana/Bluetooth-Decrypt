@@ -20,6 +20,7 @@ import java.util.Date;
 import javax.bluetooth.RemoteDevice;
 import org.ist.server.crypto.Crypto;
 import org.ist.server.crypto.KEKGenerator;
+import org.ist.server.utils.Constants;
 import org.ist.server.utils.ServerUtils;
 
 /**
@@ -28,23 +29,16 @@ import org.ist.server.utils.ServerUtils;
  */
 public class BluetoothServer extends javax.swing.JFrame {
 
-    private String publicKeyPath;
     private String privateKeyPath;
     StreamConnection connection = null;
 
-    // Constant that indicate command from devices
-    private static final int EXIT_CMD = -1;
-    private static final int KEY_RIGHT = 1;
-    private static final int KEY_LEFT = 2;
-    private final String LOGIN_PREFIX = "LG";
-    private final String SEP_MSG = ";";
-    private final String SEP_PIPE = ":";
     private String sessionKey;
     private String kek;
     private String folderEncryptionKey;
     private int index = 0;
     private final int challengePeriod = 5000; //in milliseconds
     private String folderPath = null;
+    StreamConnectionNotifier notifier = null;
 
     /**
      * Creates new form BluetoothServer
@@ -64,7 +58,7 @@ public class BluetoothServer extends javax.swing.JFrame {
     private void waitForConnection() {
         // retrieve the local Bluetooth device object
         LocalDevice local = null;
-        StreamConnectionNotifier notifier = null;
+        
         String message;
         sessionKey = null;
         kek = null;
@@ -78,7 +72,9 @@ public class BluetoothServer extends javax.swing.JFrame {
 
             UUID uuid = new UUID("8ce255c0200a11e0ac640800200c9a67", false);
             String url = "btspp://localhost:" + uuid.toString() + ";name=BluetoothApp";
+            if(notifier==null){
             notifier = (StreamConnectionNotifier) Connector.open(url);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             message = "Bluetooth is not turned on.\n";
@@ -127,19 +123,18 @@ public class BluetoothServer extends javax.swing.JFrame {
                         decryptedClientMessage = crypto.decrypt(receivedMsg, sessionKey);
                     }
 
-                    //  String processedMsg = messageProcessor.processReceivedString(receivedMsg);
-                    String messageType = decryptedClientMessage.split(SEP_PIPE)[0];
+                    String messageType = decryptedClientMessage.split(Constants.SEP_PIPE)[0];
                     jTextArea1.setText(jTextArea1.getText() + receivedMsg + "\n");
 
-                    if (index == 0 && messageType.equals(LOGIN_PREFIX)) {
+                    if (index == 0 && messageType.equals(Constants.LOGIN_PREFIX)) {
                         //sessionKey=getSessionKey(plainReplyMessage);
-                        userName = decryptedClientMessage.split(SEP_PIPE)[1];
+                        userName = decryptedClientMessage.split(Constants.SEP_PIPE)[1];
                         this.kek = messageProcessor.getKEK(userName, privateKeyPath);
                         this.folderEncryptionKey = messageProcessor.getFolderEncryptionKey(userName, privateKeyPath);
                         this.sessionKey = messageProcessor.generateSessionKey();
                         plainReplyMessage = messageProcessor.generatePlainMsgWithSession(sessionKey);
                         encryptedReplyMessage = messageProcessor.generateEncryptedMsg(plainReplyMessage, kek);
-                        if (encryptedReplyMessage.equals("NOUSER")) {
+                        if (encryptedReplyMessage.equals(Constants.NO_USER_EXIST)) {
                             jTextArea1.setText(jTextArea1.getText() + "no user exist with username" + userName + "\n");
                             break;
                         }
@@ -179,7 +174,6 @@ public class BluetoothServer extends javax.swing.JFrame {
                     handleForLostConnection(userName);
                     break;
                 }
-                //processCommand(command);
             }
         } catch (Exception e) {
             if (userName != null) {
@@ -189,7 +183,6 @@ public class BluetoothServer extends javax.swing.JFrame {
                 } catch (Exception ex) {
                 }
                 handleForLostConnection(userName);
-
             }
             System.out.println("ex from waitForInput");
         }
@@ -307,20 +300,6 @@ public class BluetoothServer extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
-
-    /**
-     * @return the publicKeyPath
-     */
-    public String getPublicKeyPath() {
-        return publicKeyPath;
-    }
-
-    /**
-     * @param publicKeyPath the publicKeyPath to set
-     */
-    public void setPublicKeyPath(String publicKeyPath) {
-        this.publicKeyPath = publicKeyPath;
-    }
 
     /**
      * @return the privateKeyPath

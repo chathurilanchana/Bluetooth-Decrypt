@@ -53,7 +53,6 @@ public class KEKGenerator {
             md.update(text.getBytes("iso-8859-1"), 0, text.length());
             byte[] shahash = md.digest();
             hash = convertToHex(shahash);
-            System.out.println("HASH - " + hash);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {

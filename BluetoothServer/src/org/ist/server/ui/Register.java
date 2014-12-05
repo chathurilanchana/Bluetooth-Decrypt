@@ -5,10 +5,15 @@
  */
 package org.ist.server.ui;
 
+import java.io.File;
 import java.util.Date;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import org.ist.server.crypto.AssymetricEncryptionHandler;
 import org.ist.server.crypto.KEKGenerator;
+import org.ist.server.utils.Constants;
 import org.ist.server.utils.DBConnector;
+import org.ist.server.utils.KeyFileFilter;
 import org.ist.server.utils.ServerUtils;
 import org.ist.server.utils.User;
 
@@ -18,7 +23,7 @@ import org.ist.server.utils.User;
  */
 public class Register extends javax.swing.JFrame {
 
-    final String passwordRegex = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%]).{8,20})";//at least min 8 chars, 1 uppercase,one numeric, one special char, 1 lower
+    String adminPublicKeyPath = "";
 
     /**
      * Creates new form Register
@@ -48,7 +53,7 @@ public class Register extends javax.swing.JFrame {
         jPasswordField1 = new javax.swing.JPasswordField();
         jPasswordField2 = new javax.swing.JPasswordField();
         jLabel5 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -88,6 +93,13 @@ public class Register extends javax.swing.JFrame {
 
         jLabel5.setText("Admin Public Key Path");
 
+        jButton2.setText("Browse");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -97,7 +109,7 @@ public class Register extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jScrollPane1))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(24, 24, 24)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -113,9 +125,10 @@ public class Register extends javax.swing.JFrame {
                             .addComponent(jPasswordField1, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jPasswordField2)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jButton1)
-                                .addGap(0, 133, Short.MAX_VALUE))
-                            .addComponent(jTextField2))))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jButton1)
+                                    .addComponent(jButton2))
+                                .addGap(0, 133, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -138,13 +151,13 @@ public class Register extends javax.swing.JFrame {
                     .addComponent(jLabel4)
                     .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel5)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(6, 6, 6)
+                    .addComponent(jButton2))
+                .addGap(18, 18, 18)
                 .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -152,12 +165,12 @@ public class Register extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        jTextArea1.setText("");
         String password = new String(jPasswordField1.getPassword());
         String confirmPassword = new String(jPasswordField2.getPassword());
-        String adminPublicKeyPath = jTextField2.getText();
-        if (!jTextField1.getText().equals("") && !password.equals("") && !password.equals("") && !confirmPassword.equals("")) {
+        if (!jTextField1.getText().equals("") && !password.equals("") && !password.equals("") && !confirmPassword.equals("") && !adminPublicKeyPath.equals("")) {
             ServerUtils utils = new ServerUtils();
-            boolean isPasswordStrong = utils.isPasswordStrong(password, passwordRegex);
+            boolean isPasswordStrong = utils.isPasswordStrong(password);
             boolean isPasswordEqual = utils.isPasswordEqual(password, confirmPassword);
             boolean isFileExist = utils.isFileExist(jTextField4.getText());
             String summaryMessage = utils.buildSummaryMessage(isPasswordStrong, isPasswordEqual, isFileExist);
@@ -177,21 +190,27 @@ public class Register extends javax.swing.JFrame {
                 String KEK = kekGen.createHash(user.getPassword());
                 String encryptedKEK = assymetricHandler.encryptByPublicKey(KEK, adminPublicKeyPath);
                 user.setKEK(encryptedKEK);
-                
-                String folderEncryptionKey=utils.generateFolderEncryptionKey();
-                String encryptedFolderEncryptionKey=assymetricHandler.encryptByPublicKey(folderEncryptionKey, adminPublicKeyPath);
+
+                String folderEncryptionKey = utils.generateFolderEncryptionKey();
+                String encryptedFolderEncryptionKey = assymetricHandler.encryptByPublicKey(folderEncryptionKey, adminPublicKeyPath);
                 user.setFileEncryptionKey(encryptedFolderEncryptionKey);
                 String code = connector.insertUser(user);
-                
-                if (code.equals("EXIST")) {
-                    jTextField1.setText("user already exists");
-                } else if (code.equals("SUCCESS")) {
-                    //encrypt the folder
-                    ServerUtils sUtils = new ServerUtils();
-                    sUtils.encryptFolder(jTextField4.getText(), folderEncryptionKey);
-                    jTextArea1.setText("User created and folder encrypted");
+
+                switch (code) {
+                    case Constants.USER_EXIST_CODE:
+                        jTextArea1.setText("user already exists");
+                        break;
+                    case Constants.SUCCESS_CODE:
+                        //encrypt the folder
+                        ServerUtils sUtils = new ServerUtils();
+                        sUtils.encryptFolder(jTextField4.getText(), folderEncryptionKey);
+                        jTextArea1.setText("User created and folder encrypted");
+                        break;
                 }
             }
+        }
+        else{
+        jTextArea1.setText("please fill all the necessary fields");
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -202,6 +221,31 @@ public class Register extends javax.swing.JFrame {
     private void jPasswordField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jPasswordField1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        JFileChooser fc = new JFileChooser();
+        fc.setFileFilter(new KeyFileFilter());
+        int res = fc.showOpenDialog(null);
+        // We have an image!
+        try {
+            if (res == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+                if (!file.getAbsolutePath().endsWith(Constants.KEY_FILE_EXTENSION)) {
+                    JOptionPane.showMessageDialog(null,
+                            "You must select your key to proceed", "",
+                            JOptionPane.ERROR_MESSAGE);
+                } else {
+                    adminPublicKeyPath = file.getAbsolutePath();
+                }
+            } else {
+                JOptionPane.showMessageDialog(null,
+                        "You must select your public key file before preceding.", "Aborting...",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -240,6 +284,7 @@ public class Register extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -250,7 +295,6 @@ public class Register extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField4;
     // End of variables declaration//GEN-END:variables
 }

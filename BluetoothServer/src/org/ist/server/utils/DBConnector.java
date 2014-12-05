@@ -73,7 +73,7 @@ public class DBConnector {
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("table not created");
-            return "ERROR";
+            return Constants.ERROR_CODE;
         }
 
         String selectQuery = "SELECT Username FROM " + dbName + " WHERE Username = ?";
@@ -82,11 +82,11 @@ public class DBConnector {
             preparedStatement.setString(1, user.getUserName());
             ResultSet rs = preparedStatement.executeQuery();
             if (rs.isBeforeFirst()) {
-                return "EXIST";
+                return Constants.USER_EXIST_CODE;
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            return "ERROR";
+            return Constants.ERROR_CODE;
         }
 //ResultSet rs = stmt.executeQuery("SELECT Lname FROM Customers WHERE Snum = 2001");
 
@@ -101,11 +101,11 @@ public class DBConnector {
             preparedStatement.executeUpdate();
         } catch (Exception ex) {
             ex.printStackTrace();
-            return "ERROR";
+             return Constants.ERROR_CODE;
 
         }
 
-        return "SUCCESS";
+        return Constants.SUCCESS_CODE;
     }
 
     String retrieveKEKForUser(String username) {
@@ -117,14 +117,14 @@ public class DBConnector {
             ResultSet rs = preparedStatement.executeQuery();
 
          if (!rs.isBeforeFirst()) {
-                return "NOUSER";
+                return Constants.NO_USER_EXIST;
             }
                 while (rs.next()) {
                     String KEK = rs.getString("KEK");
                     return KEK;
                 }
         } catch (Exception ex) {
-            return "ERROR";
+            return Constants.ERROR_CODE;
         }
         return null;
     }
@@ -139,7 +139,7 @@ public class DBConnector {
             ResultSet rs = preparedStatement.executeQuery();
 
          if (!rs.isBeforeFirst()) {
-                return "NOUSER";
+                return Constants.NO_USER_EXIST;
             }
                 while (rs.next()) {
                     String fkey = rs.getString("FileEncryptionKey");
@@ -147,7 +147,7 @@ public class DBConnector {
                     return fkey;
                 }
         } catch (Exception ex) {
-            return "ERROR";
+            return Constants.ERROR_CODE;
         }
         return null;
     }
@@ -166,7 +166,7 @@ public class DBConnector {
                     return filePath;
                 }
         } catch (Exception ex) {
-            return "ERROR";
+            return Constants.ERROR_CODE;
         }
         return null;
     }

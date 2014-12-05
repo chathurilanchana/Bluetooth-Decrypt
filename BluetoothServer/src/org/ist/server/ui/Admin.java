@@ -5,12 +5,19 @@
  */
 package org.ist.server.ui;
 
+import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.Spring;
+import org.ist.server.utils.Constants;
+import org.ist.server.utils.KeyFileFilter;
+
 /**
  *
  * @author Chathuri
  */
 public class Admin extends javax.swing.JFrame {
-
+BluetoothServer server;
     /**
      * Creates new form Admin
      */
@@ -30,18 +37,29 @@ public class Admin extends javax.swing.JFrame {
         jTextField1 = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
-        jTextField2 = new javax.swing.JTextField();
+        jButton2 = new javax.swing.JButton();
 
         jTextField1.setText("jTextField1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(500, 400));
 
         jLabel2.setText("Private Key path");
 
         jButton1.setText("Start");
+        jButton1.setMaximumSize(new java.awt.Dimension(40, 23));
+        jButton1.setMinimumSize(new java.awt.Dimension(30, 23));
+        jButton1.setPreferredSize(new java.awt.Dimension(40, 23));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("Browse");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
             }
         });
 
@@ -50,24 +68,27 @@ public class Admin extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(33, 33, 33)
-                .addComponent(jLabel2)
-                .addGap(87, 87, 87)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 357, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(157, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(30, 30, 30)
+                        .addComponent(jLabel2)
+                        .addGap(68, 68, 68)
+                        .addComponent(jButton2))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(167, 167, 167)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(461, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(182, 182, 182)
+                .addGap(146, 146, 146)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(42, 42, 42)
+                    .addComponent(jButton2))
+                .addGap(28, 28, 28)
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(140, Short.MAX_VALUE))
+                .addContainerGap(187, Short.MAX_VALUE))
         );
 
         pack();
@@ -75,11 +96,40 @@ public class Admin extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        String privateKeyPath=jTextField2.getText();
-        BluetoothServer server=new BluetoothServer();
-        server.setPrivateKeyPath(privateKeyPath);
+        if(server!=null){
         server.setVisible(true);
+        this.setVisible(false);
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        JFileChooser fc = new JFileChooser();
+        System.out.println(fc.getCurrentDirectory().getAbsoluteFile());
+        fc.setFileFilter(new KeyFileFilter());
+        int res = fc.showOpenDialog(null);
+        // We have an image!
+        try {
+            if (res == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+              if(!file.getAbsolutePath().endsWith(Constants.KEY_FILE_EXTENSION)){
+                  JOptionPane.showMessageDialog(null,
+                        "You must select your key to proceed","",
+                        JOptionPane.ERROR_MESSAGE);
+              }
+              else{
+                server=new BluetoothServer();
+                server.setPrivateKeyPath(file.getAbsolutePath());
+              }
+            } 
+            else {
+                JOptionPane.showMessageDialog(null,
+                        "You must select your public key file before preceding.", "Aborting...",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (Exception ex) {
+       ex.printStackTrace();
+    }
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -121,8 +171,8 @@ public class Admin extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
     // End of variables declaration//GEN-END:variables
 }

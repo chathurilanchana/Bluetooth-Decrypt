@@ -23,11 +23,8 @@ import org.ist.server.crypto.Crypto;
  */
 public class ServerUtils {
 
-    private static final String ENCRYPT_EXT = ".enc";
-    private static final String DECRYPT_EXT = ".dec";
-
-    public boolean isPasswordStrong(String password, String regex) {
-        Pattern pattern = Pattern.compile(regex);
+      public boolean isPasswordStrong(String password) {
+        Pattern pattern = Pattern.compile(Constants.passwordRegex);
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
     }
@@ -109,7 +106,7 @@ public class ServerUtils {
                     String childName = child.getAbsolutePath();
                     StringBuilder sb = new StringBuilder();
                     sb.append(childName);
-                    if (childName.endsWith(ENCRYPT_EXT)) {
+                    if (childName.endsWith(Constants.ENCRYPT_FILE_EXTENSION)) {
                         sb.replace(childName.lastIndexOf("."), childName.length(), "");
                         String decryptedName = sb.toString();
 
@@ -133,8 +130,8 @@ public class ServerUtils {
             if (directoryListing != null) {
                 for (File child : directoryListing) {
                     String childName = child.getAbsolutePath();
-                    if (!childName.endsWith(ENCRYPT_EXT)) {
-                        String encryptedName = childName + ENCRYPT_EXT;
+                    if (!childName.endsWith(Constants.ENCRYPT_FILE_EXTENSION)) {
+                        String encryptedName = childName + Constants.ENCRYPT_FILE_EXTENSION;
 
                         copyFile(Cipher.ENCRYPT_MODE, childName, encryptedName,
                                 key);

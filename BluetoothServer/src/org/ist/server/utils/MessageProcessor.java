@@ -16,12 +16,6 @@ import org.ist.server.crypto.KEKGenerator;
  * @author Chathuri
  */
 public class MessageProcessor {
-
-    private final String LOGIN_PREFIX = "LG";
-    private final String SESSION_PREFIX = "SK";
-    private final String NONSE_STRING = "NS";
-    private final String SEP_MSG = ";";
-    private final String SEP_PIPE = ":";
     private int nounce=0;
 
     /**
@@ -78,13 +72,13 @@ public class MessageProcessor {
 
     public String generatePlainMsgWithSession(String sessionKey) {
         this.nounce = new Random().nextInt(400000);
-        String plainText = SESSION_PREFIX.concat(SEP_PIPE).concat(sessionKey).concat(SEP_MSG).concat(NONSE_STRING).concat(SEP_PIPE).concat(Integer.toString(getNounce()));
+        String plainText = Constants.SESSION_PREFIX.concat(Constants.SEP_PIPE).concat(sessionKey).concat(Constants.SEP_MSG).concat(Constants.NONSE_STRING).concat(Constants.SEP_PIPE).concat(Integer.toString(getNounce()));
         return plainText;
     }
     
     public String generatePlainNounceMessage(){
-        this.nounce=(nounce==0)?new Random().nextInt(100000):nounce+2;
-        String plainMessage=NONSE_STRING.concat(SEP_PIPE).concat(Integer.toString(nounce));
+        this.nounce=(nounce==0)?new Random().nextInt(400000):nounce+2;
+        String plainMessage=Constants.NONSE_STRING.concat(Constants.SEP_PIPE).concat(Integer.toString(nounce));
         return plainMessage;
     }
 
@@ -122,7 +116,7 @@ public class MessageProcessor {
     }
 
     public boolean isNonceCorrect(String decryptedClientMessage) {
-      String nounceStr=decryptedClientMessage.split(SEP_PIPE)[1];
+      String nounceStr=decryptedClientMessage.split(Constants.SEP_PIPE)[1];
       int nounceFromClient=Integer.parseInt(nounceStr);
       if(nounceFromClient!=getNounce()+1){
           return false;

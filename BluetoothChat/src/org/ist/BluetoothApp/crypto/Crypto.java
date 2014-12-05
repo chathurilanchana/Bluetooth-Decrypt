@@ -56,7 +56,8 @@ public class Crypto {
 	}
 
 	
-	// Get key byte array 128 bit. We need to change this to 256
+	/* Get key byte array 128 bit. We need to change this to 256, but if u change this to 256, 
+	u have to update security specifications in java 1.7*/
 	private byte[] getKeyBytes(String key) throws UnsupportedEncodingException {
 		byte[] keyBytes = new byte[16];
 		byte[] parameterKeyBytes = key.getBytes("UTF-8");
