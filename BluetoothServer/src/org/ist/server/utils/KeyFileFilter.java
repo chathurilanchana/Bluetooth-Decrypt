@@ -8,10 +8,7 @@ package org.ist.server.utils;
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
-/**
- *
- * @author Chathuri
- */
+
 public class KeyFileFilter extends FileFilter implements java.io.FileFilter {
 
     @Override

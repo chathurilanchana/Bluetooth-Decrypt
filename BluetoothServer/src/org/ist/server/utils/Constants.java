@@ -5,10 +5,7 @@
  */
 package org.ist.server.utils;
 
-/**
- *
- * @author Chathuri
- */
+
 public class Constants {
 
     public static final String ERROR_CODE = "ERROR";

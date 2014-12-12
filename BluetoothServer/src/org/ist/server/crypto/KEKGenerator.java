@@ -10,10 +10,7 @@ import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
-/**
- *
- * @author Chathuri
- */
+
 public class KEKGenerator {
 
     private final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";

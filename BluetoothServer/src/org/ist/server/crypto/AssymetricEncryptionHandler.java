@@ -13,10 +13,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import org.ist.server.utils.Constants;
 
-/**
- *
- * @author Chathuri
- */
 public class AssymetricEncryptionHandler {
 
     public final String ALGORITHM = "RSA";

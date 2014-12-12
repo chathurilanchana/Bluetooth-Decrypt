@@ -12,16 +12,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- *
- * @author Chathuri
- */
+
 public class DBConnector {
 
     static String dbUrl = "jdbc:mysql://127.0.0.1:3306/bluetooth";
     String dbName = "user";
     static String userName = "root";
-    static String password = "";
+    static String password = "chathuri";
     private Connection dbConnection = null;
 
     public DBConnector() {

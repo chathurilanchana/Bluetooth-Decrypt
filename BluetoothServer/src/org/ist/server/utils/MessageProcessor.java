@@ -11,10 +11,7 @@ import org.ist.server.crypto.AssymetricEncryptionHandler;
 import org.ist.server.crypto.Crypto;
 import org.ist.server.crypto.KEKGenerator;
 
-/**
- *
- * @author Chathuri
- */
+
 public class MessageProcessor {
     private int nounce=0;
 

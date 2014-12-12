@@ -17,10 +17,7 @@ import javax.crypto.Cipher;
 import org.ist.server.crypto.AssymetricEncryptionHandler;
 import org.ist.server.crypto.Crypto;
 
-/**
- *
- * @author Chathuri
- */
+
 public class ServerUtils {
 
       public boolean isPasswordStrong(String password) {

@@ -19,9 +19,7 @@ public class User {
   private Date lastUpdated;
   private String encryptedPath;
 
-    /**
-     * @return the userName
-     */
+   
     public String getUserName() {
         return userName;
     }

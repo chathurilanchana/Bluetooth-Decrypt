@@ -5,10 +5,7 @@
  */
 package org.ist.server.crypto;
 import java.io.UnsupportedEncodingException;
-/**
- *
- * @author Chathuri
- */
+
 public class Base64 {
   /**
      * Default values for encoder/decoder flags.

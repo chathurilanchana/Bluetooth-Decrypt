@@ -17,10 +17,7 @@ import org.ist.server.utils.KeyFileFilter;
 import org.ist.server.utils.ServerUtils;
 import org.ist.server.utils.User;
 
-/**
- *
- * @author Chathuri
- */
+
 public class Register extends javax.swing.JFrame {
 
     String adminPublicKeyPath = "";

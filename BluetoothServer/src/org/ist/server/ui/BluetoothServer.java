@@ -23,10 +23,7 @@ import org.ist.server.crypto.KEKGenerator;
 import org.ist.server.utils.Constants;
 import org.ist.server.utils.ServerUtils;
 
-/**
- *
- * @author Chathuri
- */
+
 public class BluetoothServer extends javax.swing.JFrame {
 
     private String privateKeyPath;
@@ -161,7 +158,7 @@ public class BluetoothServer extends javax.swing.JFrame {
                             plainReplyMessage = messageProcessor.generatePlainNounceMessage();
                             encryptedReplyMessage = messageProcessor.generateEncryptedMsg(plainReplyMessage, sessionKey);
                         } else {
-                            throw new Exception();
+                           continue;
                         }
                     }
 

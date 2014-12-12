@@ -24,10 +24,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-/**
- *
- * @author Chathuri
- */
+
 public class Crypto {
 
     public String getEncryptedMessage(String messageToEncrypt, String kek) {
