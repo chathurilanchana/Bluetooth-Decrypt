@@ -17,10 +17,9 @@ import javax.crypto.Cipher;
 import org.ist.server.crypto.AssymetricEncryptionHandler;
 import org.ist.server.crypto.Crypto;
 
-
 public class ServerUtils {
 
-      public boolean isPasswordStrong(String password) {
+    public boolean isPasswordStrong(String password) {
         Pattern pattern = Pattern.compile(Constants.passwordRegex);
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
@@ -34,12 +33,33 @@ public class ServerUtils {
         File f = new File(filePath);
         return f.isDirectory();
     }
-    
-      public String generateFolderEncryptionKey(){
-        return UUID.randomUUID().toString(); 
+
+    public boolean isFolderAlreadyEncrypted(String folderPath) {
+        try{
+        File dir = new File(folderPath);
+        File[] directoryListing = dir.listFiles();
+           // String cmd = "attrib +h "+fileName; //"attrib +h E:\\input"; 
+        // Runtime.getRuntime().exec(cmd);
+        if (directoryListing != null) {
+            for (File child : directoryListing) {
+                String childName = child.getAbsolutePath();
+                if (childName.endsWith(Constants.ENCRYPT_FILE_EXTENSION)) {
+                return true;
+                }
+            }
+        }
+        }
+        catch(Exception ex){
+            return false;
+        }
+        return false;
     }
 
-    public String buildSummaryMessage(boolean passwordStrong, boolean passwordEqual, boolean fileExist) {
+    public String generateFolderEncryptionKey() {
+        return UUID.randomUUID().toString();
+    }
+
+    public String buildSummaryMessage(boolean passwordStrong, boolean passwordEqual, boolean fileExist,boolean alreadyEncrypted) {
         StringBuilder sb = new StringBuilder();
         if (!passwordStrong) {
             sb.append("Password should have at least 8 chars, 1 numeric \n1 special charactor and 1 upper and lowercase\n");
@@ -49,7 +69,10 @@ public class ServerUtils {
             sb.append("password and confirm password should be same\n");
         }
         if (!fileExist) {
-            sb.append("selected file path not exist");
+            sb.append("selected file path not exist\n");
+        }
+        if(alreadyEncrypted){
+            sb.append("Selected folder is already encrypted");
         }
         System.out.println(sb.toString());
         return sb.toString();
@@ -97,7 +120,7 @@ public class ServerUtils {
             File dir = new File(fileName);
             File[] directoryListing = dir.listFiles();
            // String cmd = "attrib -h "+fileName; //"attrib +h E:\\input"
-           // Runtime.getRuntime().exec(cmd);
+            // Runtime.getRuntime().exec(cmd);
             if (directoryListing != null) {
                 for (File child : directoryListing) {
                     String childName = child.getAbsolutePath();
@@ -123,7 +146,7 @@ public class ServerUtils {
             File dir = new File(fileName);
             File[] directoryListing = dir.listFiles();
            // String cmd = "attrib +h "+fileName; //"attrib +h E:\\input"; 
-           // Runtime.getRuntime().exec(cmd);
+            // Runtime.getRuntime().exec(cmd);
             if (directoryListing != null) {
                 for (File child : directoryListing) {
                     String childName = child.getAbsolutePath();

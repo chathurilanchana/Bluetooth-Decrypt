@@ -18,7 +18,7 @@ public class DBConnector {
     static String dbUrl = "jdbc:mysql://127.0.0.1:3306/bluetooth";
     String dbName = "user";
     static String userName = "root";
-    static String password = "chathuri";
+    static String password = "root";
     private Connection dbConnection = null;
 
     public DBConnector() {

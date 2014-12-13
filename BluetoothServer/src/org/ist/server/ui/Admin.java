@@ -40,6 +40,7 @@ BluetoothServer server;
         jTextField1.setText("jTextField1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Admin UI");
         setPreferredSize(new java.awt.Dimension(350, 350));
 
         jLabel2.setText("Private Key path");
@@ -114,7 +115,7 @@ BluetoothServer server;
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
          String userDirLocation = Constants.userKeyFilePath;
         File userDir = new File(userDirLocation);
-        JFileChooser fc = new JFileChooser();
+        JFileChooser fc = new JFileChooser(userDir);
         System.out.println(fc.getCurrentDirectory().getAbsoluteFile());
         fc.setFileFilter(new KeyFileFilter());
         int res = fc.showOpenDialog(null);
