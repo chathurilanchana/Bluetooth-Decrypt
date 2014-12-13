@@ -112,6 +112,8 @@ BluetoothServer server;
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+         String userDirLocation = Constants.userKeyFilePath;
+        File userDir = new File(userDirLocation);
         JFileChooser fc = new JFileChooser();
         System.out.println(fc.getCurrentDirectory().getAbsoluteFile());
         fc.setFileFilter(new KeyFileFilter());

@@ -21,4 +21,5 @@ public class Constants {
     public static final String ENCRYPT_FILE_EXTENSION = ".enc";
     public static final String DECRYPT_FILE_EXTENSIOn = ".dec";
     public static final String passwordRegex = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%]).{8,20})";//at least min 8 chars, 1 uppercase,one numeric, one special char, 1 lower
+    public static final String userKeyFilePath="E:\\1SECURITY_DEMO\\keys";
 }

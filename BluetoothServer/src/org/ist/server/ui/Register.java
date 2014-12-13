@@ -220,8 +220,12 @@ public class Register extends javax.swing.JFrame {
     }//GEN-LAST:event_jPasswordField1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        JFileChooser fc = new JFileChooser();
+        String userDirLocation =Constants.userKeyFilePath;
+        File userDir = new File(userDirLocation);
+        // default to user directory
+        JFileChooser fc = new JFileChooser(userDir);
         fc.setFileFilter(new KeyFileFilter());
+        
         int res = fc.showOpenDialog(null);
         // We have an image!
         try {
